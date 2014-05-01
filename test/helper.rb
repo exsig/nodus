@@ -1,4 +1,13 @@
 require 'simplecov'
+require 'rubygems'
+require 'bundler'
+require 'minitest'
+require 'minitest/unit'
+require 'minitest/autorun'
+$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+$LOAD_PATH.unshift(File.dirname(__FILE__))
+require 'nodus'
+
 
 module SimpleCov::Configuration
   def clean_filters
@@ -14,8 +23,6 @@ end
 ENV["COVERAGE"] && SimpleCov.start do
   add_filter "/.rvm/"
 end
-require 'rubygems'
-require 'bundler'
 begin
   Bundler.setup(:default, :development)
 rescue Bundler::BundlerError => e
@@ -23,12 +30,6 @@ rescue Bundler::BundlerError => e
   $stderr.puts "Run `bundle install` to install missing gems"
   exit e.status_code
 end
-require 'test/unit'
-require 'shoulda'
 
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
-$LOAD_PATH.unshift(File.dirname(__FILE__))
-require 'nodus'
-
-class Test::Unit::TestCase
+class MiniTest::Unit::TestCase
 end
