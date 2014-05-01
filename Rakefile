@@ -12,16 +12,22 @@ end
 require 'rake'
 
 require 'jeweler'
+require './lib/nodus/version.rb'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://guides.rubygems.org/specification-reference/ for more options
-  gem.name = "nodus"
-  gem.homepage = "http://github.com/exsig/nodus"
-  gem.license = "MIT"
-  gem.summary = %Q{TODO: one-line summary of your gem}
-  gem.description = %Q{TODO: longer description of your gem}
-  gem.email = "joseph.wecker@exsig.com"
-  gem.authors = ["Joseph Wecker"]
-  # dependencies defined in Gemfile
+  gem.name        = "nodus"
+  gem.homepage    = "http://github.com/exsig/nodus"
+  gem.license     = "MIT"
+  gem.summary     = "Kahn process network with more sophistication for pipelining and signal processing"
+  gem.description = %Q{EXPERIMENTAL. A form of data-flow programming based loosely on Kahn Process Networks. Will allow
+                       for setting up operational components that can be pipelined together in a graph. Assumes all
+                       components (nodes) are 'online' algorithms with more or less steady-state resource utilization
+                       for continuous streams of data.}.gsub(/\s+/,' ')
+  gem.email       = "joseph.wecker@exsig.com"
+  gem.authors     = ["Joseph Wecker"]
+  gem.version     = Nodus::VERSION
+
+  # (dependencies are defined in the Gemfile)
 end
 Jeweler::RubygemsDotOrgTasks.new
 
