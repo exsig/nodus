@@ -25,7 +25,7 @@ class Reporter < Minitest::Reporters::BaseReporter
   end
 end
 
-Minitest::Reporters.use! Minitest::Reporters::ProgressReporter.new
+Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
 module SimpleCov::Configuration
   def clean_filters
