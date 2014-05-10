@@ -9,6 +9,8 @@ GEM
       tzinfo (~> 1.1)
     addressable (2.3.6)
     ansi (1.4.3)
+    brice (0.2.9)
+      ruby-nuggets (>= 0.5.2)
     builder (3.2.2)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
@@ -60,6 +62,10 @@ GEM
     rake (10.3.1)
     rdoc (4.1.1)
       json (~> 1.4)
+    rubinius-actor (0.0.2)
+      rubinius-core-api
+    rubinius-core-api (0.0.1)
+    ruby-nuggets (0.9.9)
     ruby-progressbar (1.4.2)
     simplecov (0.7.1)
       multi_json (~> 1.0)
@@ -75,9 +81,11 @@ PLATFORMS
 DEPENDENCIES
   activesupport (>= 4.1.0)
   ansi
+  brice
   bundler
   jeweler
   minitest (>= 5.3)
   minitest-reporters (>= 1.0.1)
   rdoc
+  rubinius-actor
   simplecov (~> 0.7.1)
