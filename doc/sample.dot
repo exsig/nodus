@@ -1,0 +1,18 @@
+digraph G {
+  rankdir=LR;
+  node[shape=record];
+  sources[label="{sources|{<bid> bid|<ask> ask|<ts> ts}}"];
+  fd1[label="{{<x>x}|fd(1,1)|<y>y}"];
+  fd2[label="{{<x>x}|fd(1,1)|<y>y}"];
+  epmf1[label="{{<x>x}|epmf}"];
+  epmf2[label="{{<x>x}|epmf}"];
+  epmf3[label="{{<x>x}|epmf}"];
+  epmf4[label="{{<x>x}|epmf}"];
+  sources:bid -> fd1:x;
+  sources:ask -> fd2:x;
+  fd1:y -> epmf1:x;
+  fd2:y -> epmf2:x;
+  sources:bid -> epmf3:x;
+  sources:ask -> epmf4:x;
+  
+  }

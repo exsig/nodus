@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage[x11names, rgb]{xcolor}
+\usepackage[utf8]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{snakes,arrows,shapes}
+\usepackage{amsmath}
+%
+%
+
+%
+
+%
+
+\begin{document}
+\pagestyle{empty}
+%
+%
+%
+
+\enlargethispage{100cm}
+% Start of code
+% \begin{tikzpicture}[anchor=mid,>=latex',line join=bevel,]
+\begin{tikzpicture}[>=latex',line join=bevel,]
+  \pgfsetlinewidth{1bp}
+%%
+\pgfsetcolor{black}
+  % Edge: sources -> fdiff2
+  \draw [->] (94bp,58bp) .. controls (108.47bp,58bp) and (111bp,45.183bp)  .. (130bp,37bp);
+  % Edge: sources -> fdiff1
+  \draw [->] (94bp,81bp) .. controls (110bp,81bp) and (113.15bp,94.335bp)  .. (134bp,102bp);
+  % Node: sources
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (0bp,0bp) -- (0bp,92bp) -- (94bp,92bp) -- (94bp,0bp) -- cycle;
+  \draw (59bp,0bp) -- (59bp,92bp);
+  \draw (59bp,69bp) -- (94bp,69bp);
+  \draw (59bp,46bp) -- (94bp,46bp);
+  \draw (59bp,23bp) -- (94bp,23bp);
+  \draw (29.5bp,42.3bp) node {sources};
+  \draw (76.5bp,76.8bp) node {bid};
+  \draw (76.5bp,53.8bp) node {ask};
+  \draw (76.5bp,30.8bp) node {ts};
+  \draw (76.5bp,7.8bp) node {};
+\end{scope}
+  % Node: fdiff2
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (142.5bp,32.8bp) node {x};
+  \draw (142.5bp,9.8bp) node { };
+  \draw (213bp,21.3bp) node {$\exp^{i\pi}=-1$};
+\end{scope}
+  % Node: fdiff1
+\begin{scope}
+  \definecolor{strokecol}{rgb}{0.0,0.0,0.0};
+  \pgfsetstrokecolor{strokecol}
+  \draw (135bp,67bp) -- (135bp,113bp) -- (267bp,113bp) -- (267bp,67bp) -- cycle;
+  \draw (135bp,90bp) -- (159bp,90bp);
+  \draw (159bp,67bp) -- (159bp,113bp);
+  \draw (147bp,97.8bp) node {x};
+  \draw (147bp,74.8bp) node { };
+  \draw (213bp,86.3bp) node {finite-difference};
+\end{scope}
+%
+\end{tikzpicture}
+% End of code
+
+%
+\end{document}
+%
+
+
+
