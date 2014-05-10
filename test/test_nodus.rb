@@ -21,3 +21,16 @@ class NodesTest < MiniTest::Unit::TestCase
 
 
 end
+
+
+class BufferedStreamTest < MiniTest::Unit::TestCase
+
+  class BSTest < Nodus::BufferedStream
+    
+  end
+
+  def test_temporary_buffered_stream
+    b = BSTest.new
+    #b << 
+  end
+end

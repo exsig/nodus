@@ -18,6 +18,8 @@
   - any number of inputs / generators (although some collision maintenance might be necessary)
   - possibly determine how many records to hold / what kind of queries available - esp. if transient
 
+  - possibly define the actor/process/server to launch to populate values if they are/will-be needed, which
+    automatically happens if there isn't one running already.
 
 ### misc
 
