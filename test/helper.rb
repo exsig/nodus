@@ -7,23 +7,16 @@ rescue Bundler::BundlerError => e
   $stderr.puts "Run `bundle install` to install missing gems"
   exit e.status_code
 end
-
 require 'simplecov'
+require 'faker'
+require 'randexp'
 require 'minitest'
-require 'minitest/unit'
-require 'minitest/autorun'
 require 'minitest/reporters'
+require 'minitest/spec'
+require 'minitest/autorun'
 $LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
 $LOAD_PATH.unshift(File.dirname(__FILE__))
 require 'nodus'
-
-class Reporter < Minitest::Reporters::BaseReporter
-  def start
-    super
-    puts "#  AWESOME!"
-    puts
-  end
-end
 
 Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 
@@ -41,6 +34,36 @@ end
 ENV["COVERAGE"] && SimpleCov.start do
   add_filter "/.rvm/"
 end
+I18n.enforce_available_locales = false
 
-class MiniTest::Unit::TestCase
+include Faker
+
+
+module RandomGen
+  def rand_poisson(lmbda=10)
+    # Poisson distribution with mean & variance of lmda- via knuth's simple algorithm
+    el = Math.exp(- lmbda); k=0; p=1
+    loop do
+      k += 1; p *= rand
+      return k - 1 if p <= el
+    end
+  end
+
+  def rand_times(lmbda=10, &block)
+    k = rand_poisson(lmbda)
+    if block_given? then k.times.map(&block)
+    else k.times end
+  end
+
+  def rand_word
+    len = rand_poisson
+    return '' if len == 0
+    /\w{#{len}}/.gen
+  end
+
+  def random_path
+    '/' + rand_times{rand_word}.join('/')
+  end
 end
+
+include RandomGen
