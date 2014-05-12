@@ -27,4 +27,9 @@ describe StreamPath do
     table_names.sort.uniq.size.must_equal table_names.size
     table_names.each{|t| t.must_match /^[\w_-]+$/}
   end
+
+  it 'knows whether or not it is temporary' do
+    StreamPath.new.temp?.must_equal true
+    StreamPath.new(random_path).temp?.must_equal false
+  end
 end

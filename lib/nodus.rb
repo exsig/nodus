@@ -1,4 +1,5 @@
 require 'nodus/version'
+require 'active_support/all'
 module Nodus
 #  module Node
 #    # Goals
