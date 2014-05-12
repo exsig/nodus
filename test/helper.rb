@@ -67,3 +67,7 @@ module RandomGen
 end
 
 include RandomGen
+
+class Module
+  include Minitest::Spec::DSL
+end

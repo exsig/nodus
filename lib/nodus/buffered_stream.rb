@@ -15,6 +15,18 @@ module Nodus
     alias :to_s :path
   end
 
+  module Stores
+    class Base
+
+    end
+
+    class Simple < Base
+      def initialize(path)
+        raise ArgumentError, "Cannot use simple-store for non-temporary or persisted data" unless path.temp?
+      end
+    end
+  end
+
   # Typed, decoupled, overlapping input / output streams that correspond to a single actual signal.
   #
   # Responsibilities
@@ -24,8 +36,11 @@ module Nodus
   #   - attaching consumers w/ queries
   #   - ...
   class BufferedStream
+    attr_reader :path_def
+    delegate :path, :table_name, :temp?, to: :path_def
+
     def initialize(path=nil)
-      @path = StreamPath === path ? path : StreamPath.new(path_or_hash) # nil value means temporary
+      @path_def = StreamPath === path ? path : StreamPath.new(path) # nil value means temporary
 
 
     end
