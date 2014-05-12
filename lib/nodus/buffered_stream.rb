@@ -11,9 +11,8 @@ module Nodus
       @path_a = @path.split('/').select{|w| w.present?}
     end
     def table_name() "stream_#{@path_a.join('_')}" end
-    def temp?()
-      !!(@path_a[0] =~ /^te?mp$/)
-    end
+    def temp?()      !!(@path_a[0] =~ /^te?mp$/)   end
+    alias :to_s :path
   end
 
   # Typed, decoupled, overlapping input / output streams that correspond to a single actual signal.
@@ -25,7 +24,11 @@ module Nodus
   #   - attaching consumers w/ queries
   #   - ...
   class BufferedStream
+    def initialize(path=nil)
+      @path = StreamPath === path ? path : StreamPath.new(path_or_hash) # nil value means temporary
 
+
+    end
 
   end
 end

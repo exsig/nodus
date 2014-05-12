@@ -6,6 +6,11 @@ describe StreamPath do
     StreamPath.new(init_path).path.must_equal init_path
   end
 
+  it 'gives the right path with to_s' do
+    init_path = random_path
+    StreamPath.new(init_path).to_s.must_equal init_path
+  end
+
   it 'initializes with a hash and maintains ordering' do
     StreamPath.new(first:  'one', second: 'two', third:   'three').path.must_equal '/one/two/three'
     StreamPath.new(second: 'two', third: :three, 'first' => 'one').path.must_equal '/two/three/one'
