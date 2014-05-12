@@ -22,21 +22,21 @@ end
 #  * 
 
 
-module Nodus
-  class RandomUniform < Nodus::Node
-    out_port      :y
-    initial_state :main
-    def parameterize(range=1.0, seed=nil)
-      @seed  = seed  || ::Random.new_seed
-      @range = range || 1.0
-      @prng  = ::Random.new(@seed)
-    end
-
-    def main
-      y.emit @prng.rand(@range)
-    end
-  end
-end
+#module Nodus
+#  class RandomUniform < Nodus::Node
+#    out_port      :y
+#    initial_state :main
+#    def parameterize(range=1.0, seed=nil)
+#      @seed  = seed  || ::Random.new_seed
+#      @range = range || 1.0
+#      @prng  = ::Random.new(@seed)
+#    end
+#
+#    def main
+#      y.emit @prng.rand(@range)
+#    end
+#  end
+#end
 
 
 #  src = Nodus::RandomUniform.new
