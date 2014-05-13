@@ -15,17 +15,37 @@ module Nodus
     alias :to_s :path
   end
 
+
+  # Initially created by:
+  #   * any BufferedStream when it is the originating point of a session,
+  #   * any root-node generator
+  #   * a processing node if it is given token-less data (wraps in a default anon session)
+  #   * a processing node that explicitly creates a new signal
+  class Session
+
+  end
+
   class Token
-    FIELDS = [:physical_ts, :system_ts, :created_ts, :updated_ts, :gen_seqid, :value]
+    FIELDS = [:physical_ts, :system_ts, :created_ts, :updated_ts, :gen_seqid, :value, :session]
     FIELDS.each do |f|
       define_method(f){ @data[f] }
       define_method("#{f}="){|v| @data[f] = v}
     end
 
+    # Token.new(params={k: v, ...})
+    # Token.new(value)
+    # Token.new(value, predecessor)
+    # Token.new(value, predecessor, overrides)
+    #
+    # other_token.next(new_value, overrides={})
     def initialize(params={})
-      @data = {}
-      FIELDS.each{|f| @data[f] = params.delete(f)}
-      raise ArgumentError, "Unexpected param(s): #{params.inspect} - Accepts: #{FIELDS.inspect}" unless params.blank?
+      #case params
+      #when nil, Hash
+        @data = {}
+        FIELDS.each{|f| @data[f] = params.delete(f)}
+        raise ArgumentError, "Unexpected param(s): #{params.inspect} - Accepts: #{FIELDS.inspect}" unless params.blank?
+      #when 
+      #end
     end
 
     def [](k)    @data[validated(k)] end
