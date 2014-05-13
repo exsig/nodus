@@ -15,17 +15,42 @@ module Nodus
     alias :to_s :path
   end
 
-  module Stores
-    class Base
-
+  class Token
+    FIELDS = [:physical_ts, :system_ts, :created_ts, :updated_ts, :gen_seqid, :value]
+    FIELDS.each do |f|
+      define_method(f){ @data[f] }
+      define_method("#{f}="){|v| @data[f] = v}
     end
 
-    class Simple < Base
-      def initialize(path)
-        raise ArgumentError, "Cannot use simple-store for non-temporary or persisted data" unless path.temp?
-      end
+    def initialize(params={})
+      @data = {}
+      FIELDS.each{|f| @data[f] = params.delete(f)}
+      raise ArgumentError, "Unexpected param(s): #{params.inspect} - Accepts: #{FIELDS.inspect}" unless params.blank?
+    end
+
+    def [](k) @data[k] end
+
+    def []=(k,v)
+      k = k.to_sym
+      raise ArgumentError, "#{k} must be one of: #{FIELDS.inspect}" unless FIELDS.include?(k)
+      @data[k] = v
     end
   end
+
+#  module Stores
+#    class Base
+#
+#    end
+#
+#    class Simple < Base
+#      def initialize(path)
+#        raise ArgumentError, "Cannot use simple-store for non-temporary or persisted data" unless path.temp?
+#        super
+#      end
+#
+#      def 
+#    end
+#  end
 
   # Typed, decoupled, overlapping input / output streams that correspond to a single actual signal.
   #

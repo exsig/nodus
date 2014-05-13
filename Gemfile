@@ -16,7 +16,7 @@ group :development do
   gem 'rdoc'
 
   # Testing
-  gem 'faker'
+  gem 'ffaker'
   gem 'randexp'
   gem 'minitest', '>= 5.3'
   gem 'minitest-reporters', '>= 1.0.1'

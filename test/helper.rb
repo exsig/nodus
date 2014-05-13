@@ -8,7 +8,7 @@ rescue Bundler::BundlerError => e
   exit e.status_code
 end
 require 'simplecov'
-require 'faker'
+require 'ffaker'
 require 'randexp'
 require 'minitest'
 require 'minitest/reporters'
@@ -63,6 +63,10 @@ module RandomGen
 
   def random_path
     '/' + rand_times{rand_word}.join('/')
+  end
+
+  def random_datetime
+    ::Faker::Time.date(series: [])[0]
   end
 end
 
