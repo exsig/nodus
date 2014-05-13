@@ -28,16 +28,14 @@ module Nodus
       raise ArgumentError, "Unexpected param(s): #{params.inspect} - Accepts: #{FIELDS.inspect}" unless params.blank?
     end
 
-    def [](k)
-      k = k.to_sym
-      raise ArgumentError, "#{k} must be one of: #{FIELDS.inspect}" unless FIELDS.include?(k)
-      @data[k]
-    end
+    def [](k)    @data[validated(k)] end
+    def []=(k,v) @data[validated(k)] = v end
 
-    def []=(k,v)
-      k = k.to_sym
-      raise ArgumentError, "#{k} must be one of: #{FIELDS.inspect}" unless FIELDS.include?(k)
-      @data[k] = v
+    private
+    def validated(key)
+      key = key.to_sym
+      raise ArgumentError, "#{key} must be one of: #{FIELDS.inspect}" unless FIELDS.include?(key)
+      key
     end
   end
 
