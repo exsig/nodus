@@ -56,7 +56,7 @@ describe BufferedStream do
   end
 end
 
-
+# TODO: wrap most of this into a new expectation- something like ".must_have_indifferent_method @subject" or something
 module TokenAttrSpec
   it 'can be initialized' do
     Token.new(@subject => sample_dat).must_be_kind_of Token
