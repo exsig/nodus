@@ -28,7 +28,11 @@ module Nodus
       raise ArgumentError, "Unexpected param(s): #{params.inspect} - Accepts: #{FIELDS.inspect}" unless params.blank?
     end
 
-    def [](k) @data[k] end
+    def [](k)
+      k = k.to_sym
+      raise ArgumentError, "#{k} must be one of: #{FIELDS.inspect}" unless FIELDS.include?(k)
+      @data[k]
+    end
 
     def []=(k,v)
       k = k.to_sym

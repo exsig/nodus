@@ -123,6 +123,15 @@ describe Token do
     ->{ Token.new(fname => 'val') }.must_raise ArgumentError
   end
 
+  it 'rejects invalid fields even array-style' do
+    fname = rand_word
+    while FIELD_NAMES.include?(fname) do fname = rand_word end
+    t = Token.new
+    t.wont_respond_to fname
+    ->{ t[fname] }.must_raise ArgumentError
+    ->{ t[fname] = 'val' }.must_raise ArgumentError
+  end
+
   it 'initializes multiple fields' do
     pairs = FIELD_PAIRS.sample(100).map{|f,vgen| [f, vgen.call]}
     t = Token.new(Hash[pairs])
