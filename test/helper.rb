@@ -74,4 +74,9 @@ include RandomGen
 
 class Module
   include Minitest::Spec::DSL
+e
+def remove_class(klass)
+  const = klass.to_s.to_sym
+  Object.send(:remove_const, const) if Object.send(:const_defined?, const)
 end
+nd
