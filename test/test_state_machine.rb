@@ -1,6 +1,6 @@
 require 'helper'
-require 'nodus/statemachine'
 include Nodus
+
 # class MyStateMachine
 #   include StateMachine
 #   state :one, :two
