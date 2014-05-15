@@ -1,6 +1,4 @@
 require 'helper'
-#require 'nodus/statemachine'
-require 'nodus/actor'
 include Nodus
 
 # address/handle for passing in messages to other actors

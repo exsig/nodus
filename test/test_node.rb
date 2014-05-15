@@ -39,10 +39,10 @@ include Nodus
 describe Node do
   before do
     class LagNode < Node
-      input  :x, Integer
-      output :y, Integer
-      def initialize(size=1) @buff = Array.new(size, nil) end
-      def start() y << (@buff << x.receive).shift; :start end
+      input  :a, Integer
+      output :b, Integer
+      def parameterize(size=1) @buff = Array.new(size, nil) end
+      def start() b << (@buff << a.receive).shift; :start end
     end
   end
 
@@ -50,6 +50,36 @@ describe Node do
     remove_class LagNode
   end
 
+  it 'allows class-level ports to be defined' do
+    s = LagNode.new
+    s.inputs.size.must_equal        1
+    s.outputs.size.must_equal       1
+    s.inputs.first.must_be_kind_of  NodePort
+    s.outputs.first.must_be_kind_of NodePort
+    s.inputs.first.name.must_equal  :a
+    s.outputs.first.name.must_equal :b
+  end
+
+  it 'merges class and instance-level ports' do
+    class Subject < Node
+      input  :x, Integer
+      output :y, Integer
+      def parameterize
+        input :m
+        output :n
+      end
+    end
+
+    s = Subject.new
+
+    s.inputs.size.must_equal  2
+    s.outputs.size.must_equal 2
+
+    s.inputs.map{|i|  i.name }.sort.must_equal [:m, :x]
+    s.outputs.map{|i| i.name }.sort.must_equal [:n, :y]
+
+    remove_class Subject
+  end
 
   # it 'can act like a lazy enumerable' do
   #   5.times.node(LagNode.new).to_a.must_equal [nil, 0, 1, 2, 3]

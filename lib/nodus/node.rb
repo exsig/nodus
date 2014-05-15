@@ -1,3 +1,52 @@
+module Nodus
+  class NodePort
+    attr_accessor :name, :kind, :desc
+    def initialize(name, kind=Integer, desc=nil)
+      @name = name.to_s.to_sym
+      @kind = kind
+      @desc = desc
+    end
+  end
+
+  class Node
+    include Nodus::StateMachine
+
+    def self.c_inputs()  @c_inputs  ||= [] end
+    def self.c_outputs() @c_outputs ||= [] end
+    def self.input (sym, kind=Integer, desc=nil) c_inputs  << NodePort.new(sym, kind, desc) end
+    def self.output(sym, kind=Integer, desc=nil) c_outputs << NodePort.new(sym, kind, desc) end
+
+    def initialize(*args, &block)
+      @inputs  = [] + self.class.c_inputs
+      @outputs = [] + self.class.c_outputs
+      parameterize(*args, &block)
+    end
+
+    def parameterize() :redefine_me end
+
+
+    def input(sym, kind=Integer, desc=nil)
+      @inputs << NodePort.new(sym, kind, desc)
+    end
+
+    def output(sym, kind=Integer, desc=nil)
+      @outputs << NodePort.new(sym, kind, desc)
+    end
+
+    def inputs() @inputs end
+    def outputs() @outputs end
+  end
+end
+
+
+
+
+
+
+
+
+
+
 # in-ports
 # out-ports
 # enumable
@@ -85,13 +134,3 @@
 #    Nodus::Accumulator.new do |acc|
 #      acc.source = Nodus::FXSource[source_name]
 #      acc.
-
-
-module Nodus
-  class Node
-    include Nodus::StateMachine
-
-  end
-end
-
-
