@@ -112,6 +112,7 @@ describe StateMachine do
     ->{ Subject.new.start_statemachine(:one) }.must_raise NoMethodError
   end
 
+  # TODO: maybe it ought to default the first state to the first one declared instead...
   it 'defaults the first state to :initial' do
     class Subject
       include StateMachine
@@ -129,4 +130,6 @@ describe StateMachine do
 
     ->{ Subject2.new.start_statemachine }.must_raise NoMethodError
   end
+
+
 end
