@@ -183,53 +183,87 @@ describe Node do
       state :start
       def start; sleep 1; :start end
     end
-
     s = ExampleNode.new
     s.x.must_be_kind_of InputNodePort
     s.y.must_be_kind_of OutputNodePort
   end
-#  class A
-#    def fred; puts 'fred' end
-#    def make_wilma
-#      #metaclass = class << self; self; end
-#      #metaclass.send(:define_method, :wilma){ puts 'wilma' }
-#      class << self
-#        define_method(:wilma){ puts 'wilma' }
-#      end
-#    end
-#  end
-#
-#  a = A.new
-#  a.fred
-#  a.wilma
-#  a.make_wilma
-#  a.wilma
-#  b = A.new
-#  b.wilma
-#  a.wilma
 
 
-  #it 'works' do
-  #  class ExampleNode < Node
-  #    input :x
-  #    output :y
-  #    state :start
+  #--------------- Port accessability -------------
 
-  #    def parameterize
-  #      @i = 0
-  #    end
+  it 'allows external data into input port' do
+    class ExampleNode < Node
+      input(:x); output(:y); state(:start)
+      def start; pass; :start end
+    end
+    s = ExampleNode.new
+    s.x.send(1).must_equal s.x
+    (s.x << 1).must_equal  s.x
+  end
 
-  #    def start
-  #      sleep 1
-  #      @i += 1
-  #      puts "PING!(#{@i})"
-  #      :start
-  #    end
-  #  end
+  it 'disallows external data into output port' do
+    class ExampleNode < Node
+      input(:x); output(:y); state(:start)
+      def start; pass; :start end
+    end
+    s = ExampleNode.new
+    ->{ s.y.send(123)}.must_raise RuntimeError
+    ->{ s.y << 123   }.must_raise RuntimeError
+  end
 
-  #  s = ExampleNode.new
-  #  sleep 10
-  #end
+  it 'allows internal data into output port' do
+    class ExampleNode < Node
+      input(:x); output(:y); state(:start)
+      def start; y << 123; :done end
+    end
+    ExampleNode.new.value.must_equal :normal_exit
+  end
+
+  it 'disallows internal data into output port' do
+    class ExampleNode < Node
+      input(:x); output(:y); state(:start)
+      def start; x << 123; :done end
+    end
+    ->{ ExampleNode.new.value }.must_raise RuntimeError
+  end
+
+  it 'allows external data out of output port' do
+    class ExampleNode < Node
+      input(:x); output(:y); state(:start)
+      def start; y << 123; sleep 1; :start end
+    end
+    ExampleNode.new.y.receive.must_equal 123
+  end
+
+  it 'disallows external data out of input port' do
+    class ExampleNode < Node
+      input(:x); output(:y); state(:start)
+      def start; y << 123; sleep 1; :start end
+    end
+    ->{ExampleNode.new.x.receive}.must_raise RuntimeError
+  end
+
+  it 'disallows internal data from output port' do
+    class ExampleNode < Node
+      input(:x); output(:y); state(:start)
+      def start; y.receive; :start end
+    end
+    ->{ExampleNode.new.value}.must_raise RuntimeError
+  end
+
+  it 'passthrough- allows internal data from input port' do
+    class ExampleNode < Node
+      input(:x); output(:y); state(:start)
+      def start; y << x.receive; :start end
+    end
+    s = ExampleNode.new
+    s.x << 123
+    s.y.receive.must_equal 123
+  end
+
+
+  #-----------------------------------------------------------
+
 
 
 end

@@ -19,6 +19,9 @@ module Nodus
     def inside_master?
       @master && @master_thread && @master_thread.alive? && @master_thread == Thread.current
     end
+
+    def send(val) @channel << val; self end # self on the end so it's chainable
+    def receive() @channel.receive end
   end
 
 
@@ -39,7 +42,7 @@ module Nodus
     end
     alias_method :<<, :send
 
-    def receive(token)
+    def receive()
       raise RuntimeError, "Can't receive from an input port- try from an output port." unless inside_master?
       super
     end
@@ -57,7 +60,7 @@ module Nodus
     end
     alias_method :<<, :send
 
-    def receive(token)
+    def receive()
       raise RuntimeError, "Can't receive from an output port from inside the node." if inside_master?
       super
     end
@@ -67,6 +70,11 @@ module Nodus
     include Nodus::StateMachine
 
     attr_reader :inputs, :outputs, :thread
+
+    delegate :join, :value, :status, to: :thread
+
+    def self.pass() Thread.pass end
+    def pass() Thread.pass end
 
     def self.c_inputs () @c_inputs  ||= [] end
     def self.c_outputs() @c_outputs ||= [] end
@@ -98,6 +106,7 @@ module Nodus
         @active = false
         @active_inputs  = {}
         @active_outputs = {}
+        :normal_exit
       end
       starting.receive
     end
