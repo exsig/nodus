@@ -1,7 +1,6 @@
 require 'helper'
 require 'nodus/node'
 include Nodus
-include Nodus::Errors
 
 describe Node do
   after do
