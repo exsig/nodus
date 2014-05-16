@@ -43,7 +43,7 @@ module Nodus
   class OutputNodePort < NodePort
     def initialize(*) super; @node_type = :output end
     def send(*)    raise RuntimeError, "Node only accepts data on input ports"  unless inside_master? ; super end
-    def receive()  raise RuntimeError, "Node should only write to output ports"     if inside_master? ; super end
+    def receive(*) raise RuntimeError, "Node should only write to output ports"     if inside_master? ; super end
     alias_method :<<, :send
   end
 
