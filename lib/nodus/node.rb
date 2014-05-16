@@ -110,7 +110,14 @@ module Nodus
         ports.each do |p|
           metaclass.send(:define_method, p.name) do
             if alive? then instance_variable_get(active_list)[p.name]
-            else raise RuntimeError, "Can't find a port for a dead node." end
+            else
+              # TODO: Make some real error classes so these can be tested specifically
+              if @thread.join(0.1) # Also elicits an internal exception as appropriate
+                raise RuntimeError, "Can't find a port for a dead node: Node has value of '#{@thread.value}'"
+              else
+                raise RuntimeError, "Can't find a port for a dead node. Couldn't join node...?"
+              end
+            end
           end
         end
       end
