@@ -264,6 +264,22 @@ describe Node do
 
   #-----------------------------------------------------------
 
+  it 'passes data through as appropriate' do
+    class ExampleNode < Node
+      input(:x); output(:y); state(:start)
+      def start; y << x.receive; :start end
+    end
+    s = ExampleNode.new
+    10.times do |i|
+      s.x << i
+      s.y.receive.must_equal i
+    end
+
+    10.times {|i| s.x << i}
+    10.times do |i|
+      s.y.receive.must_equal i
+    end
+  end
 
 
 end

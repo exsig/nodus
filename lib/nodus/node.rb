@@ -1,5 +1,8 @@
 require 'ostruct'
 
+# TODO: Always automatically an output 'port' that is for exceptions & signals. Possibly specify restart strategy
+# instead of relying on a supervisor?
+
 module Nodus
   class NodePort
     attr_accessor :name, :kind, :desc, :node_type
@@ -22,6 +25,10 @@ module Nodus
 
     def send(val) @channel << val; self end # self on the end so it's chainable
     def receive() @channel.receive end
+
+    def detach
+      @channel = @master = @master_thread = nil
+    end
   end
 
 
@@ -75,18 +82,17 @@ module Nodus
 
     def restart
       raise RuntimeError, "Can't restart- it's still alive." if alive?
-      @active_inputs  = {}
-      @active_outputs = {}
+      detach_ports()
       @active = true
       starting = Rubinius::Channel.new
       @thread = Thread.new do
         @thread = Thread.current
         attach_ports()
         starting << true
-        start_statemachine(:start)
+        start_statemachine(:start) # <-- this will loop until an exception or one of the states returns :done
+
         @active = false
-        @active_inputs  = {}
-        @active_outputs = {}
+        detach_ports()
         :normal_exit
       end
       starting.receive
@@ -98,6 +104,7 @@ module Nodus
 
     def parameterize() :redefine_me end
 
+    # TODO: Fix. This isn't actually doing anything due to state-machine being prepended... NoMethodError is happening instead
     def start
       raise RuntimeError, "You must define an 'start' method which is the first state for the node."
     end
@@ -131,6 +138,12 @@ module Nodus
         raise RuntimeError, "Ports were specified on node with duplicate port names: #{last}" if last == curr
         curr
       end
+    end
+
+    def detach_ports
+      ((@active_inputs || {}).values + (@active_outputs || {}).values).each{|p| p.detach}
+      @active_inputs  = {}
+      @active_outputs = {}
     end
 
     def attach_ports
