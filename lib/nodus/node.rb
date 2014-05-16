@@ -1,40 +1,152 @@
+require 'ostruct'
+
 module Nodus
   class NodePort
-    attr_accessor :name, :kind, :desc
+    attr_accessor :name, :kind, :desc, :node_type
     def initialize(name, kind=Integer, desc=nil)
-      @name = name.to_s.to_sym
-      @kind = kind
-      @desc = desc
+      @node_type = nil
+      @name      = name.to_s.to_sym
+      @kind      = kind
+      @desc      = desc
+      @channel   = Rubinius::Channel.new
+    end
+
+    def attach(master_node)
+      @master = master_node
+      @master_thread = master_node.thread
+    end
+
+    def inside_master?
+      @master && @master_thread && @master_thread.alive? && @master_thread == Thread.current
+    end
+  end
+
+
+  #                |   input  |   output
+  # ---------------|----------|-----------
+  # outside-world  |   <<     |  receive
+  # within node    | receive  |    <<
+  #
+  class InputNodePort < NodePort
+    def initialize(*)
+      super
+      @node_type = :input
+    end
+
+    def send(token)
+      raise RuntimeError, "Can't send to an input port from inside the node." if inside_master?
+      super
+    end
+    alias_method :<<, :send
+
+    def receive(token)
+      raise RuntimeError, "Can't receive from an input port- try from an output port." unless inside_master?
+      super
+    end
+  end
+
+  class OutputNodePort < NodePort
+    def initialize(*)
+      super
+      @node_type = :output
+    end
+
+    def send(token)
+      raise RuntimeError, "Can't send to an output port- try an input port." unless inside_master?
+      super
+    end
+    alias_method :<<, :send
+
+    def receive(token)
+      raise RuntimeError, "Can't receive from an output port from inside the node." if inside_master?
+      super
     end
   end
 
   class Node
     include Nodus::StateMachine
 
-    def self.c_inputs()  @c_inputs  ||= [] end
+    attr_reader :inputs, :outputs, :thread
+
+    def self.c_inputs () @c_inputs  ||= [] end
     def self.c_outputs() @c_outputs ||= [] end
-    def self.input (sym, kind=Integer, desc=nil) c_inputs  << NodePort.new(sym, kind, desc) end
-    def self.output(sym, kind=Integer, desc=nil) c_outputs << NodePort.new(sym, kind, desc) end
+    def self.input (sym, kind=Integer, desc=nil) c_inputs  << OpenStruct.new(name: sym, kind: kind, desc: desc) end
+    def self.output(sym, kind=Integer, desc=nil) c_outputs << OpenStruct.new(name: sym, kind: kind, desc: desc) end
+    def      input (sym, kind=Integer, desc=nil) @inputs   << OpenStruct.new(name: sym, kind: kind, desc: desc) end
+    def      output(sym, kind=Integer, desc=nil) @outputs  << OpenStruct.new(name: sym, kind: kind, desc: desc) end
 
     def initialize(*args, &block)
       @inputs  = [] + self.class.c_inputs
       @outputs = [] + self.class.c_outputs
       parameterize(*args, &block)
+      validate_ports()
+      methodize_ports()
+      restart()
+    end
+
+    def restart
+      raise RuntimeError, "Can't restart- it's still alive." if alive?
+      @active_inputs  = {}
+      @active_outputs = {}
+      @active = true
+      starting = Rubinius::Channel.new
+      @thread = Thread.new do
+        @thread = Thread.current
+        attach_ports()
+        starting << true
+        start_statemachine(:start)
+        @active = false
+        @active_inputs  = {}
+        @active_outputs = {}
+      end
+      starting.receive
+    end
+
+    def alive?
+      @active && @thread.alive?
     end
 
     def parameterize() :redefine_me end
 
-
-    def input(sym, kind=Integer, desc=nil)
-      @inputs << NodePort.new(sym, kind, desc)
+    def start
+      raise RuntimeError, "You must define an 'start' method which is the first state for the node."
     end
 
-    def output(sym, kind=Integer, desc=nil)
-      @outputs << NodePort.new(sym, kind, desc)
+    private
+
+    def methodize_ports
+      metaclass = class << self; self; end
+      [[inputs, :@active_inputs], [outputs, :@active_outputs]].each do |ports, active_list|
+        ports.each do |p|
+          metaclass.send(:define_method, p.name) do
+            if alive? then instance_variable_get(active_list)[p.name]
+            else raise RuntimeError, "Can't find a port for a dead node." end
+          end
+        end
+      end
     end
 
-    def inputs() @inputs end
-    def outputs() @outputs end
+    def validate_ports
+      # TODO: make sure at least one port total
+      all_ports = self.inputs + self.outputs
+      port_names = all_ports.map{|p| p.name}
+      port_names.sort.reduce(nil) do |last, curr|
+        raise RuntimeError, "Ports were specified on node with duplicate port names: #{last}" if last == curr
+        curr
+      end
+    end
+
+    def attach_ports
+      inputs.each do |p|
+        @active_inputs[p.name] = InputNodePort.new(p.name, p.kind, p.desc)
+        @active_inputs[p.name].attach(self)
+      end
+
+      outputs.each do |p|
+        @active_outputs[p.name] = OutputNodePort.new(p.name, p.kind, p.desc)
+        @active_outputs[p.name].attach(self)
+      end
+    end
   end
 end
 
