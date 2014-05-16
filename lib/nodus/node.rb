@@ -84,7 +84,7 @@ module Nodus
       raise RuntimeError, "Can't restart- it's still alive." if alive?
       detach_ports()
       @active = true
-      starting = Rubinius::Channel.new
+      starting = Rubinius::Channel.new # Used to make sure this method doesn't return until ports are attached in the other thread
       @thread = Thread.new do
         @thread = Thread.current
         attach_ports()

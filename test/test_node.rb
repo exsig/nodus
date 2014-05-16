@@ -279,6 +279,11 @@ describe Node do
     10.times do |i|
       s.y.receive.must_equal i
     end
+
+    s.x << 123 << 321 << 456
+    s.y.receive.must_equal 123
+    s.y.receive.must_equal 321
+    s.y.receive.must_equal 456
   end
 
 
