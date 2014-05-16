@@ -1,53 +1,10 @@
 require 'helper'
 require 'nodus/node'
 include Nodus
-#class NodesTest < MiniTest::Unit::TestCase
-#  def test_node
-#    # 
-#
-#
-#  end
-#
-#  def test_lag_node
-#    lag = Nodus::Node::Lag.new(1)
-#    assert_equal  nil, lag.next(1)
-#    assert_equal  1,   lag.next(2)
-#    assert_equal  2,   lag.next(-1)
-#    assert_equal -1,   lag.next(2)
-#
-#    lag = Nodus::Node::Lag.new(5)
-#    5.times{|n| lag.next n}
-#    assert_equal 0, lag.next(5)
-#  end
-#
-#
-#end
-#
-#
-#class BufferedStreamTest < MiniTest::Unit::TestCase
-#
-#  class BSTest < Nodus::BufferedStream
-#    
-#  end
-#
-#  def test_temporary_buffered_stream
-#    b = BSTest.new
-#    #b << 
-#  end
-#end
+include Nodus::Errors
 
 describe Node do
-#  before do
-#    class LagNode < Node
-#      input  :a, Integer
-#      output :b, Integer
-#      def parameterize(size=1) @buff = Array.new(size, nil) end
-#      def start() b << (@buff << a.receive).shift; :start end
-#    end
-#  end
-
   after do
-    # remove_class LagNode
     remove_class :ExampleNode
   end
 
@@ -96,7 +53,7 @@ describe Node do
       input  :x
       output :x
     end
-    ->{ ExampleNode.new }.must_raise RuntimeError
+    ->{ ExampleNode.new }.must_raise DuplicatePortError
   end
 
   it 'requires a start state' do
@@ -207,8 +164,8 @@ describe Node do
       def start; pass; :start end
     end
     s = ExampleNode.new
-    ->{ s.y.send(123)}.must_raise RuntimeError
-    ->{ s.y << 123   }.must_raise RuntimeError
+    ->{ s.y.send(123)}.must_raise OutputWriteError
+    ->{ s.y << 123   }.must_raise OutputWriteError
   end
 
   it 'allows internal data into output port' do
@@ -224,7 +181,7 @@ describe Node do
       input(:x); output(:y); state(:start)
       def start; x << 123; :done end
     end
-    ->{ ExampleNode.new.value }.must_raise RuntimeError
+    ->{ ExampleNode.new.value }.must_raise InputWriteError
   end
 
   it 'allows external data out of output port' do
@@ -240,7 +197,7 @@ describe Node do
       input(:x); output(:y); state(:start)
       def start; y << 123; sleep 1; :start end
     end
-    ->{ExampleNode.new.x.receive}.must_raise RuntimeError
+    ->{ExampleNode.new.x.receive}.must_raise InputReadError
   end
 
   it 'disallows internal data from output port' do
@@ -248,7 +205,7 @@ describe Node do
       input(:x); output(:y); state(:start)
       def start; y.receive; :start end
     end
-    ->{ExampleNode.new.value}.must_raise RuntimeError
+    ->{ExampleNode.new.value}.must_raise OutputReadError
   end
 
   it 'passthrough- allows internal data from input port' do

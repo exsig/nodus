@@ -4,7 +4,23 @@ require 'ostruct'
 # instead of relying on a supervisor?
 
 module Nodus
+  #module Errors
+  #  def_exception :DuplicatePortError, "Ports were specified on the node with duplicate port names (%s)", ArgumentError
+
+
+  #  class NodeError < StandardError; end
+
+  #end
+  module Errors
+    def_exception :OutputWriteError, "Node only accepts data on input ports",  IOError
+    def_exception :OutputReadError,  "Node should only read from input ports", IOError
+    def_exception :InputReadError,   "Node only gives data via output ports",  IOError
+    def_exception :InputWriteError,  "Node should only write to output ports", IOError
+  end
+
   class NodePort
+    include Nodus::Errors
+
     attr_accessor :name, :kind, :desc, :node_type
     def initialize(name, kind=Integer, desc=nil)
       @node_type = nil
@@ -31,7 +47,6 @@ module Nodus
     end
   end
 
-
   # InputNodePort and OutputNodePort currently just ensure that the data flows the correct direction- that is, input
   # ports can only be written to from outside the node and only be read from inside the node, and visa versa for output
   # ports. i.e.:
@@ -43,19 +58,27 @@ module Nodus
   #
   class InputNodePort < NodePort
     def initialize(*) super; @node_type = :input end
-    def send(*)    raise RuntimeError, "Node should only read from input ports"     if inside_master? ; super end
-    def receive(*) raise RuntimeError, "Node only gives data via output ports"  unless inside_master? ; super end
+    def send(*)    fail InputWriteError     if inside_master? ; super end
+    def receive(*) fail InputReadError  unless inside_master? ; super end
     alias_method :<<, :send
   end
   class OutputNodePort < NodePort
     def initialize(*) super; @node_type = :output end
-    def send(*)    raise RuntimeError, "Node only accepts data on input ports"  unless inside_master? ; super end
-    def receive(*) raise RuntimeError, "Node should only write to output ports"     if inside_master? ; super end
+    def send(*)    fail OutputWriteError unless inside_master? ; super end
+    def receive(*) fail OutputReadError      if inside_master? ; super end
     alias_method :<<, :send
+  end
+
+  module Errors
+    def_exception :DuplicatePortError, 'Ports were specified on the node with duplicate port names (%s)', ArgumentError
+    def_exception :RestartError,     "Can't restart node- it's still alive",   NodeError
+    def_exception :DeadNodeError,    "Can't find a port for a dead node (%s)", NodeError
+    def_exception :UnresponsiveNodeError, "Can't find a port for an unresponsive node (won't join)", NodeError
   end
 
   class Node
     include Nodus::StateMachine
+    include Nodus::Errors
 
     attr_reader :inputs, :outputs, :thread
 
@@ -81,7 +104,7 @@ module Nodus
     end
 
     def restart
-      raise RuntimeError, "Can't restart- it's still alive." if alive?
+      fail RestartError if alive?
       detach_ports()
       @active = true
       starting = Rubinius::Channel.new # Used to make sure this method doesn't return until ports are attached in the other thread
@@ -106,7 +129,7 @@ module Nodus
 
     # TODO: Fix. This isn't actually doing anything due to state-machine being prepended... NoMethodError is happening instead
     def start
-      raise RuntimeError, "You must define an 'start' method which is the first state for the node."
+      raise NotImplementedError, "You must define an 'start' state method."
     end
 
     private
@@ -118,12 +141,8 @@ module Nodus
           metaclass.send(:define_method, p.name) do
             if alive? then instance_variable_get(active_list)[p.name]
             else
-              # TODO: Make some real error classes so these can be tested specifically
-              if @thread.join(0.1) # Also elicits an internal exception as appropriate
-                raise RuntimeError, "Can't find a port for a dead node: Node has value of '#{@thread.value}'"
-              else
-                raise RuntimeError, "Can't find a port for a dead node. Couldn't join node...?"
-              end
+              # The join here is largely to elicit an internal exception as appropriate
+              @thread.join(0.1) ? fail(DeadNodeError, @thread.value) : fail(UnresponsiveNodeError)
             end
           end
         end
@@ -135,7 +154,9 @@ module Nodus
       all_ports = self.inputs + self.outputs
       port_names = all_ports.map{|p| p.name}
       port_names.sort.reduce(nil) do |last, curr|
-        raise RuntimeError, "Ports were specified on node with duplicate port names: #{last}" if last == curr
+        fail DuplicatePortError, last if last == curr
+        #fail DuplicatePortError, last if last == curr
+        #raise RuntimeError, "Ports were specified on node with duplicate port names: #{last}" if last == curr
         curr
       end
     end
