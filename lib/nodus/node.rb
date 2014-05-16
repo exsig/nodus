@@ -25,45 +25,26 @@ module Nodus
   end
 
 
+  # InputNodePort and OutputNodePort currently just ensure that the data flows the correct direction- that is, input
+  # ports can only be written to from outside the node and only be read from inside the node, and visa versa for output
+  # ports. i.e.:
+  #
   #                |   input  |   output
   # ---------------|----------|-----------
   # outside-world  |   <<     |  receive
   # within node    | receive  |    <<
   #
   class InputNodePort < NodePort
-    def initialize(*)
-      super
-      @node_type = :input
-    end
-
-    def send(token)
-      raise RuntimeError, "Can't send to an input port from inside the node." if inside_master?
-      super
-    end
+    def initialize(*) super; @node_type = :input end
+    def send(*)    raise RuntimeError, "Node should only read from input ports"     if inside_master? ; super end
+    def receive(*) raise RuntimeError, "Node only gives data via output ports"  unless inside_master? ; super end
     alias_method :<<, :send
-
-    def receive()
-      raise RuntimeError, "Can't receive from an input port- try from an output port." unless inside_master?
-      super
-    end
   end
-
   class OutputNodePort < NodePort
-    def initialize(*)
-      super
-      @node_type = :output
-    end
-
-    def send(token)
-      raise RuntimeError, "Can't send to an output port- try an input port." unless inside_master?
-      super
-    end
+    def initialize(*) super; @node_type = :output end
+    def send(*)    raise RuntimeError, "Node only accepts data on input ports"  unless inside_master? ; super end
+    def receive()  raise RuntimeError, "Node should only write to output ports"     if inside_master? ; super end
     alias_method :<<, :send
-
-    def receive()
-      raise RuntimeError, "Can't receive from an output port from inside the node." if inside_master?
-      super
-    end
   end
 
   class Node
