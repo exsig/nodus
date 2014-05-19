@@ -2,9 +2,30 @@ require 'helper'
 require 'nodus/node'
 include Nodus
 
+def ident_node(in_name=:x, out_name=:y)
+  unless defined? IdentNode
+    eval <<-CLASSDEF
+        class IdentNode < Node
+          state  :start
+          def parameterize(in_name=:x, out_name=:y)
+            input(@inp = in_name)
+            output(@outp = out_name)
+          end
+          def start
+            #output_ports[0] << input_ports[0].receive
+            self.send(@outp) << self.send(@inp).receive
+            return :start
+          end
+        end
+      CLASSDEF
+  end
+  IdentNode.new(in_name, out_name)
+end
+
 describe Node do
   after do
     remove_class :ExampleNode
+    remove_class :IdentNode
   end
 
   it 'allows class-level ports to be defined' do
@@ -221,11 +242,12 @@ describe Node do
   #-----------------------------------------------------------
 
   it 'passes data through as appropriate' do
-    class ExampleNode < Node
-      input(:x); output(:y); state(:start)
-      def start; y << x.receive; :start end
-    end
-    s = ExampleNode.new
+    #class ExampleNode < Node
+    #  input(:x); output(:y); state(:start)
+    #  def start; y << x.receive; :start end
+    #end
+    #s = ExampleNode.new
+    s = ident_node
     10.times do |i|
       s.x << i
       s.y.receive.must_equal i
@@ -245,5 +267,29 @@ describe Node do
   # TODO: several other tests revolving around the node status and availability of ports etc.
 
   # TODO: test backlog-send-blocking functionality somehow...
+
+
+#   it "allows a node's output port to be another node's input" do
+#     s1 = ident_node
+#     s2 = ident_node
+#     s1.y | s2.x
+#     s1.x << 1 << 2 << 3
+#     s2.y.receive.must_equal 1
+#     s2.y.receive.must_equal 2
+#     s2.y.receive.must_equal 3
+#   end
+
+#  it 'sends backlog to a new bound peer' do
+#    # (even if there is a blocked send because the backlog is too big)
+#    s1 = ident_node(:x, :y)
+#    s2 = ident_node(:x2, :y2)
+#    nums = RandomGen.rand_times(3000){|i| [:val, i, RandomGen.rand_poisson]}
+#    p nums
+#    p nums.size
+#    Thread.new { nums.each{|n| s1.x << n } }
+#    sleep 0.1
+#    s1.y | s2.x2
+#    nums.each{|n| r = s2.y2.receive; print ",#{r}"; r.must_equal n}
+#  end
 
 end

@@ -12,27 +12,33 @@ module Nodus
   def_exception :InputWriteError,  "Node should only write to output ports", IOError
 
   class NodePort
-    attr_accessor :name, :kind, :desc, :node_type
-    MAX_BACKLOG = 1024 # Number of queued objects before adding more objects blocks
+    attr_accessor :name, :kind, :desc, :node_type, :channel, :bound_peer
+    #MAX_BACKLOG = 1024 # Number of queued objects before adding more objects blocks
+    MAX_BACKLOG = 100 # Number of queued objects before adding more objects blocks
     def initialize(name, kind=Integer, desc=nil)
-      @node_type = nil
-      @name      = name.to_s.to_sym
-      @kind      = kind
-      @desc      = desc
-      @channel   = Rubinius::Channel.new
-      @sem       = Mutex.new
-      @backlog   = 0
+      @node_type  = nil
+      @name       = name.to_s.to_sym
+      @kind       = kind
+      @desc       = desc
+      @channel    = Rubinius::Channel.new
+      @sem        = Mutex.new
+      @bound_peer = nil
+      @backlog    = 0
+    end
+
+    def bound?()
+      @bound_peer.present?
     end
 
     def this() Thread.current end
 
     def attach(master_node)
-      @master = master_node
-      @master_thread = master_node.thread
+      @master_node = master_node
+      @master_node_thread = master_node.thread
     end
 
     def inside_master?
-      @master && @master_thread && @master_thread.alive? && @master_thread == this
+      @master_node && @master_node_thread && @master_node_thread.alive? && @master_node_thread == this
     end
 
     def send(val)
@@ -43,18 +49,18 @@ module Nodus
         this.priority = pri # might not work... might permanently be set at lower...
       end
       @channel << val
-      @sem.synchronize { @backlog += 1 }
+      @backlog += 1
       self # self on the end so it's chainable
     end
 
     def receive()
       res = @channel.receive
-      @sem.synchronize { @backlog -= 1 }
+      @backlog -= 1
       res
     end
 
     def detach
-      @channel = @master = @master_thread = nil
+      @channel = @master_node = @master_node_thread = nil
     end
   end
 
@@ -68,16 +74,36 @@ module Nodus
   # within node    | receive  |    <<
   #
   class InputNodePort < NodePort
+    attr_accessor :feed_peer
     def initialize(*) super; @node_type = :input end
     def send(*)    error InputWriteError     if inside_master? ; super end
     def receive(*) error InputReadError  unless inside_master? ; super end
     alias_method :<<, :send
   end
+
   class OutputNodePort < NodePort
     def initialize(*) super; @node_type = :output end
     def send(*)    error OutputWriteError unless inside_master? ; super end
     def receive(*) error OutputReadError      if inside_master? ; super end
     alias_method :<<, :send
+    def |(input_to_bind)
+      raise ArgumentError, "Output nodes can only be bound to input nodes." unless InputNodePort === input_to_bind
+      raise RuntimeError,  "Output port already bound" if bound?
+      raise RuntimeError,  "Input port already bound"  if input_to_bind.bound?
+      # BLOCK SENDING
+      # receive everything
+
+      # -------- the following doesn't work because the peer ports don't have a synchronized backlog
+      # old_channel = @channel
+      # @channel    = input_to_bind.channel
+      # @bound_peer = input_to_bind
+      # input_to_bind.bound_peer = self
+      # # Move anything queued up on old channel to the input's channel
+      # while val = old_channel.try_receive do
+      #   @channel << val
+      #   @backlog += 1
+      # end
+    end
   end
 
 
@@ -140,6 +166,16 @@ module Nodus
     def start
       raise NotImplementedError, "You must define an 'start' state method."
     end
+
+    def multi_receive(ports)
+      # TODO basically set up a separate thread waiting on each port which then resume the main thread when something
+      # arrives (and killing the other[s]). difficulty will be ensuring no lost messages on the other channel(s). This
+      # may also be implemented as a different kind of merged port pseudo-port...
+      raise NotImplementedError
+    end
+
+    def input_ports()  @active_inputs  || [] end
+    def output_ports() @active_outputs || [] end
 
     private
 
