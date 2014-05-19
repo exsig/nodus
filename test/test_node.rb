@@ -242,11 +242,6 @@ describe Node do
   #-----------------------------------------------------------
 
   it 'passes data through as appropriate' do
-    #class ExampleNode < Node
-    #  input(:x); output(:y); state(:start)
-    #  def start; y << x.receive; :start end
-    #end
-    #s = ExampleNode.new
     s = ident_node
     10.times do |i|
       s.x << i
@@ -283,7 +278,7 @@ describe Node do
    # (even if there is a blocked send because the backlog is too big)
    s1 = ident_node(:x, :y)
    s2 = ident_node(:x2, :y2)
-   nums = RandomGen.rand_times(4000){ RandomGen.rand_poisson }
+   nums = RandomGen.rand_times(4000).to_a
    Thread.new { nums.each{|n| s1.x << n } }
    sleep 0.1
    s1.y | s2.x2
