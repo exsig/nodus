@@ -1,4 +1,5 @@
 require 'ostruct'
+require 'thread'
 
 # TODO: Always automatically an output 'port' that is for exceptions & signals. Possibly specify restart strategy
 # instead of relying on a supervisor?
@@ -12,13 +13,18 @@ module Nodus
 
   class NodePort
     attr_accessor :name, :kind, :desc, :node_type
+    MAX_BACKLOG = 1024 # Number of queued objects before adding more objects blocks
     def initialize(name, kind=Integer, desc=nil)
       @node_type = nil
       @name      = name.to_s.to_sym
       @kind      = kind
       @desc      = desc
       @channel   = Rubinius::Channel.new
+      @sem       = Mutex.new
+      @backlog   = 0
     end
+
+    def this() Thread.current end
 
     def attach(master_node)
       @master = master_node
@@ -26,11 +32,26 @@ module Nodus
     end
 
     def inside_master?
-      @master && @master_thread && @master_thread.alive? && @master_thread == Thread.current
+      @master && @master_thread && @master_thread.alive? && @master_thread == this
     end
 
-    def send(val) @channel << val; self end # self on the end so it's chainable
-    def receive() @channel.receive end
+    def send(val)
+      if @backlog > MAX_BACKLOG
+        pri = this.priority
+        this.priority = -4
+        Thread.pass while @backlog > MAX_BACKLOG # Not synchronizing because being off by a few isn't a big deal
+        this.priority = pri # might not work... might permanently be set at lower...
+      end
+      @channel << val
+      @sem.synchronize { @backlog += 1 }
+      self # self on the end so it's chainable
+    end
+
+    def receive()
+      res = @channel.receive
+      @sem.synchronize { @backlog -= 1 }
+      res
+    end
 
     def detach
       @channel = @master = @master_thread = nil

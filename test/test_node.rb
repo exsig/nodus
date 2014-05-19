@@ -244,4 +244,6 @@ describe Node do
 
   # TODO: several other tests revolving around the node status and availability of ports etc.
 
+  # TODO: test backlog-send-blocking functionality somehow...
+
 end
