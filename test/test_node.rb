@@ -269,27 +269,25 @@ describe Node do
   # TODO: test backlog-send-blocking functionality somehow...
 
 
-#   it "allows a node's output port to be another node's input" do
-#     s1 = ident_node
-#     s2 = ident_node
-#     s1.y | s2.x
-#     s1.x << 1 << 2 << 3
-#     s2.y.receive.must_equal 1
-#     s2.y.receive.must_equal 2
-#     s2.y.receive.must_equal 3
-#   end
+  it "allows binding an output to an input" do
+    s1 = ident_node
+    s2 = ident_node
+    s1.y | s2.x
+    s1.x << 1 << 2 << 3
+    s2.y.receive.must_equal 1
+    s2.y.receive.must_equal 2
+    s2.y.receive.must_equal 3
+  end
 
-#  it 'sends backlog to a new bound peer' do
-#    # (even if there is a blocked send because the backlog is too big)
-#    s1 = ident_node(:x, :y)
-#    s2 = ident_node(:x2, :y2)
-#    nums = RandomGen.rand_times(3000){|i| [:val, i, RandomGen.rand_poisson]}
-#    p nums
-#    p nums.size
-#    Thread.new { nums.each{|n| s1.x << n } }
-#    sleep 0.1
-#    s1.y | s2.x2
-#    nums.each{|n| r = s2.y2.receive; print ",#{r}"; r.must_equal n}
-#  end
+  it 'sends backlog to a new bound peer' do
+   # (even if there is a blocked send because the backlog is too big)
+   s1 = ident_node(:x, :y)
+   s2 = ident_node(:x2, :y2)
+   nums = RandomGen.rand_times(4000){ RandomGen.rand_poisson }
+   Thread.new { nums.each{|n| s1.x << n } }
+   sleep 0.1
+   s1.y | s2.x2
+   nums.each{|n| s2.y2.receive.must_equal n}
+ end
 
 end

@@ -13,8 +13,7 @@ module Nodus
 
   class NodePort
     attr_accessor :name, :kind, :desc, :node_type, :channel, :bound_peer
-    #MAX_BACKLOG = 1024 # Number of queued objects before adding more objects blocks
-    MAX_BACKLOG = 100 # Number of queued objects before adding more objects blocks
+    MAX_BACKLOG = 1024 # Number of queued objects before adding more objects blocks
     def initialize(name, kind=Integer, desc=nil)
       @node_type  = nil
       @name       = name.to_s.to_sym
@@ -30,6 +29,13 @@ module Nodus
       @bound_peer.present?
     end
 
+    def bind(peer, binder)
+      return peer if bound? && @bound_peer == peer
+      error RuntimeError, "Cannot rebind port" if bound?
+      @bound_peer = peer
+      @binder     = binder
+    end
+
     def this() Thread.current end
 
     def attach(master_node)
@@ -38,7 +44,11 @@ module Nodus
     end
 
     def inside_master?
-      @master_node && @master_node_thread && @master_node_thread.alive? && @master_node_thread == this
+      alive? && @master_node_thread == this
+    end
+
+    def alive?
+      @channel && @master_node && @master_node_thread && @master_node_thread.alive?
     end
 
     def send(val)
@@ -90,19 +100,30 @@ module Nodus
       raise ArgumentError, "Output nodes can only be bound to input nodes." unless InputNodePort === input_to_bind
       raise RuntimeError,  "Output port already bound" if bound?
       raise RuntimeError,  "Input port already bound"  if input_to_bind.bound?
-      # BLOCK SENDING
-      # receive everything
+      PortBinding.new(self, input_to_bind)
+    end
+  end
 
-      # -------- the following doesn't work because the peer ports don't have a synchronized backlog
-      # old_channel = @channel
-      # @channel    = input_to_bind.channel
-      # @bound_peer = input_to_bind
-      # input_to_bind.bound_peer = self
-      # # Move anything queued up on old channel to the input's channel
-      # while val = old_channel.try_receive do
-      #   @channel << val
-      #   @backlog += 1
-      # end
+  class PortBinding
+    attr_reader :thread
+    delegate :status, to: :thread
+
+    def initialize(from_port, to_port)
+      raise ArgumentError, 'from-port must be an output port of a node' unless OutputNodePort === from_port
+      raise ArgumentError, 'to-port must be an input port of a node'    unless InputNodePort === to_port
+      from_port.bind  to_port,   self
+      to_port.bind    from_port, self
+
+      from_port = WeakRef.new(from_port)
+      to_port   = WeakRef.new(to_port)
+      @thread = Thread.new do
+        loop do
+          break unless from_port && to_port
+          val = from_port.receive
+          break unless from_port && to_port
+          to_port << val
+        end
+      end
     end
   end
 
