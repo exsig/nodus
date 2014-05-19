@@ -12,7 +12,11 @@ module Nodus
   def self._error_msg(klass) @_error_msg_map[klass] end
 end
 
-def error(klass, *args) raise klass, sprintf(*([Nodus._error_msg(klass)] + args)) end
+def error(klass, *args)
+  msg = Nodus._error_msg(klass)
+  msg ||= args.shift
+  raise klass, sprintf(*([msg] + args))
+end
 
 require 'nodus/version'
 require 'nodus/state_machine'
