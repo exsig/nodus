@@ -100,13 +100,18 @@ module Nodus
       raise ArgumentError, "Output nodes can only be bound to input nodes." unless InputNodePort === input_to_bind
       raise RuntimeError,  "Output port already bound" if bound?
       raise RuntimeError,  "Input port already bound"  if input_to_bind.bound?
-      PortBinding.new(self, input_to_bind)
+      PortBinding[self, input_to_bind]
     end
+    # TODO: ensure that, once bound, only the binder can receive.
+    # TODO: alternatively- on first receive and first send record the thread id or some other UID and only allow that
+    # one to send/receive from then on.
   end
 
   class PortBinding
     attr_reader :thread
     delegate :status, to: :thread
+
+    def self.[](from_port, to_port) self.new(from_port, to_port) end
 
     def initialize(from_port, to_port)
       raise ArgumentError, 'from-port must be an output port of a node' unless OutputNodePort === from_port
