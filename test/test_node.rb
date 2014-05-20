@@ -257,7 +257,7 @@ describe Node do
     s.y.receive.must_equal 456
   end
 
-  # TODO: several other tests revolving around the node status and availability of ports etc.
+  # TODO: several other tests revolving around the node status/death/restarts etc. and availability of ports etc.
 
   # TODO: test backlog-send-blocking functionality somehow...
 
