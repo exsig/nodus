@@ -248,15 +248,6 @@ module Nodus
       end
     end
   end
-
-
-  class NodeChain < Node
-
-    state_method :start
-    def start
-
-    end
-  end
 end
 
 
