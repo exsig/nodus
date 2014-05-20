@@ -248,10 +248,8 @@ describe Node do
       s.y.receive.must_equal i
     end
 
-    10.times {|i| s.x << i}
-    10.times do |i|
-      s.y.receive.must_equal i
-    end
+    10.times {|i| s.x << i }
+    10.times {|i| s.y.receive.must_equal i }
 
     s.x << 123 << 321 << 456
     s.y.receive.must_equal 123

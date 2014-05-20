@@ -97,7 +97,7 @@ module Nodus
     def receive(*) error OutputReadError      if inside_master? ; super end
     alias_method :<<, :send
     def |(input_to_bind)
-      raise ArgumentError, "Output nodes can only be bound to input nodes." unless InputNodePort === input_to_bind
+      raise ArgumentError, "Output ports can only be bound to input ports." unless InputNodePort === input_to_bind
       raise RuntimeError,  "Output port already bound" if bound?
       raise RuntimeError,  "Input port already bound"  if input_to_bind.bound?
       PortBinding[self, input_to_bind]
@@ -115,7 +115,7 @@ module Nodus
 
     def initialize(from_port, to_port)
       raise ArgumentError, 'from-port must be an output port of a node' unless OutputNodePort === from_port
-      raise ArgumentError, 'to-port must be an input port of a node'    unless InputNodePort === to_port
+      raise ArgumentError, 'to-port must be an input port of a node'    unless InputNodePort  === to_port
       from_port.bind  to_port,   self
       to_port.bind    from_port, self
 
