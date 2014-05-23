@@ -200,8 +200,8 @@ module Nodus
       raise NotImplementedError
     end
 
-    def input_ports()  @active_inputs  || [] end
-    def output_ports() @active_outputs || [] end
+    def input_ports()  @active_inputs  || {} end
+    def output_ports() @active_outputs || {} end
 
     private
 
