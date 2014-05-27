@@ -200,8 +200,8 @@ module Nodus
       raise NotImplementedError
     end
 
-    def input_ports()  @active_inputs  || {} end
-    def output_ports() @active_outputs || {} end
+    def input_ports()  @active_inputs  ||= {} end
+    def output_ports() @active_outputs ||= {} end
 
     private
 
@@ -231,7 +231,7 @@ module Nodus
     end
 
     def detach_ports
-      ((@active_inputs || {}).values + (@active_outputs || {}).values).each{|p| p.detach}
+      (input_ports.values + output_ports.values).each{|p| p.detach}
       @active_inputs  = {}
       @active_outputs = {}
     end
