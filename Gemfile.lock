@@ -14,6 +14,7 @@ GEM
     builder (3.2.2)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
+    excon (0.33.0)
     faraday (0.9.0)
       multipart-post (>= 1.2, < 3)
     ffaker (1.24.0)
@@ -92,6 +93,7 @@ DEPENDENCIES
   ansi
   brice
   bundler
+  excon
   ffaker
   jeweler
   minitest (>= 5.3)

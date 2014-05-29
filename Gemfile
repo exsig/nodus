@@ -5,6 +5,7 @@ gem 'rubinius-actor'
 gem 'sequel'
 gem 'sequel_pg', require: 'sequel'
 gem 'sequel_postgresql_triggers'
+gem 'excon'
 
 # Dependencies for gem development
 # (Includes everything needed to run rake, tests, features, etc.)
