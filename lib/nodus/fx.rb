@@ -1,2 +1,5 @@
+require 'excon'
+require 'json'
+require 'extensions/excon'
 require 'nodus/fx/instrument'
 require 'nodus/fx/oanda'
