@@ -1,10 +1,8 @@
-require 'nodus'
-require 'excon'
-require 'json'
+require 'nodus/fx'
 
 module Nodus
   module FX
-    class Oanda < Node
+    class Oanda < Nodus::Node
       attr_reader :instruments, :account_id
       def parameterize(source=:production, access_token=nil, instruments=nil)
         @source       = source

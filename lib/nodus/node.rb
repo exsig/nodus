@@ -1,3 +1,4 @@
+require 'nodus'
 require 'ostruct'
 require 'thread'
 

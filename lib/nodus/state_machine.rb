@@ -4,6 +4,7 @@
 # to transition to. In other words- the natural way state machines are implemented in more functional languages,
 # modified slightly because Ruby generally lacks tail-call elimination.
 #
+require 'nodus'
 
 module Nodus
   module StateMachine

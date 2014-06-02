@@ -61,7 +61,7 @@ FIELD_PAIRS.each do |attribute, gen_proc|
   end
 end
 
-describe Token do
+describe Nodus::Token do
   it 'rejects invalid fields' do
     fname = rand_word
     while FIELD_NAMES.include?(fname) do fname = rand_word end

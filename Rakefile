@@ -25,7 +25,7 @@ Jeweler::Tasks.new do |gem|
                        for continuous streams of data.}.gsub(/\s+/,' ')
   gem.email       = "joseph.wecker@exsig.com"
   gem.authors     = ["Joseph Wecker"]
-  gem.version     = Nodus::VERSION
+  gem.version     = Nodus::Version::VERSION
 
   # (dependencies are defined in the Gemfile)
 end

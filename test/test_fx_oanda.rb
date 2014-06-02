@@ -3,7 +3,7 @@ require 'nodus'
 require 'nodus/fx'
 include Nodus::FX
 
-describe Oanda do
+describe Nodus::FX::Oanda do
   it 'fails when given an unknown source type' do
     ->{Oanda.new(:weird_source)}.must_raise ArgumentError
   end

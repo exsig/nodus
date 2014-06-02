@@ -21,7 +21,7 @@ def rand_currencies(&block)
   end
 end
 
-describe Instrument do
+describe Nodus::FX::Instrument do
   it 'can be initialized with separate strings' do
     rand_currencies{ Instrument.new(@base, @counter) }
   end

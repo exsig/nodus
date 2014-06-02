@@ -1,10 +1,7 @@
-require 'active_support/all'
-require 'pp'
+require 'extensions'
 
 module Nodus
-  VFILE   = File.join(File.dirname(__FILE__),'..','VERSION')
-  VERSION = File.exist?(VFILE) ? File.read(VFILE).strip : `git -C '#{File.dirname(__FILE__)}' describe --tags`.strip
-
+  SRCDIR  = File.dirname(__FILE__)
   @_error_msg_map = {}
 
   def self.def_exception(sym, msg, superclass=RuntimeError)
@@ -14,6 +11,14 @@ module Nodus
   end
 
   def self._error_msg(klass) @_error_msg_map[klass] end
+
+  def self.const_missing(cname)
+    m = "nodus/#{cname.to_s.underscore}"
+    require m
+    klass = const_get(cname)
+    return klass if klass
+    super
+  end
 end
 
 def error(klass, *args)
@@ -21,13 +26,3 @@ def error(klass, *args)
   msg ||= args.shift
   raise klass, sprintf(*([msg] + args))
 end
-
-require 'nodus/state_machine'
-require 'nodus/actor'
-
-require 'nodus/token'
-require 'nodus/signal_path'
-require 'nodus/node'
-require 'nodus/signal'
-require 'nodus/session'
-
