@@ -1,5 +1,4 @@
 require 'nodus'
-require 'ostruct'
 require 'thread'
 
 # TODO: Always automatically an output 'port' that is for exceptions & signals. Possibly specify restart strategy

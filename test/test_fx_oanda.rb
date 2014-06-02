@@ -1,5 +1,4 @@
 require 'helper'
-require 'nodus'
 require 'nodus/fx'
 include Nodus::FX
 
