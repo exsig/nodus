@@ -2,6 +2,9 @@ require 'active_support/all'
 require 'pp'
 
 module Nodus
+  VFILE   = File.join(File.dirname(__FILE__),'..','VERSION')
+  VERSION = File.exist?(VFILE) ? File.read(VFILE).strip : `git -C '#{File.dirname(__FILE__)}' describe --tags`.strip
+
   @_error_msg_map = {}
 
   def self.def_exception(sym, msg, superclass=RuntimeError)
@@ -19,7 +22,6 @@ def error(klass, *args)
   raise klass, sprintf(*([msg] + args))
 end
 
-require 'nodus/version'
 require 'nodus/state_machine'
 require 'nodus/actor'
 
