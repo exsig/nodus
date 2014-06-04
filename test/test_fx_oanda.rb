@@ -23,5 +23,22 @@ describe Nodus::FX::Oanda do
     symbols.must_include :usd
   end
 
+  it 'has only specified pairs' do
+    o = Oanda.new(pairs: [:eur_usd])
+    o.instruments.size.must_equal 1
+    o.instruments[0].base.must_equal    :eur
+    o.instruments[0].counter.must_equal :usd
+
+    o = Oanda.new(instruments: [:eur_usd])
+    o.instruments.size.must_equal 1
+    o.instruments[0].base.must_equal    :eur
+    o.instruments[0].counter.must_equal :usd
+
+    o = Oanda.new(pairs: [:eur_usd, :usd_chf])
+    o.instruments.size.must_equal 2
+    syms = o.instruments.map{|i| [i.base, i.counter]}
+    syms.must_include [:eur, :usd]
+    syms.must_include [:usd, :chf]
+  end
 
 end
