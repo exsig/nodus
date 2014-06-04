@@ -28,6 +28,8 @@ module Nodus
           normalized_name(pair_characters[0..2].join, pair_characters[3..5].join)
         elsif Instrument === name
           [name.base, name.counter]
+        elsif Symbol === name
+          normalized_name(name.to_s)
         else
           error InstrumentNameError, name.pretty_inspect
         end

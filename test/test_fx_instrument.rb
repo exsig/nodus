@@ -29,6 +29,13 @@ describe Nodus::FX::Instrument do
     rand_currencies{ Instrument.new(@base.to_sym, @counter.to_sym) }
   end
 
+  it 'can be initialized with pair symbol' do
+    rand_currencies{ Instrument.new("#{@base} #{@counter}".to_sym) }
+    rand_currencies{ Instrument.new("#{@base}-#{@counter}".to_sym) }
+    rand_currencies{ Instrument.new("#{@base}_#{@counter}".to_sym) }
+    rand_currencies{ Instrument.new("#{@base}/#{@counter}".to_sym) }
+  end
+
   it 'can be initialized with an existing instrument' do
     rand_currencies{ Instrument.new(Instrument.new(@base,@counter)) }
   end
