@@ -14,6 +14,8 @@ module Nodus
         @pip_unit = @opts.delete(:pip) || @opts.delete(:pip_unit)
       end
 
+      def to_oanda_id() "#{base}_#{counter}".upcase end
+
       def self.normalized_name(*name)
         name = name.pop if name.size == 1
         if Array === name && name.size == 2
