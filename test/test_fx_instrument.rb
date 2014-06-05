@@ -30,10 +30,7 @@ describe Nodus::FX::Instrument do
   end
 
   it 'can be initialized with pair symbol' do
-    rand_currencies{ Instrument.new("#{@base} #{@counter}".to_sym) }
-    rand_currencies{ Instrument.new("#{@base}-#{@counter}".to_sym) }
-    rand_currencies{ Instrument.new("#{@base}_#{@counter}".to_sym) }
-    rand_currencies{ Instrument.new("#{@base}/#{@counter}".to_sym) }
+    ' -_/'.each_char{|d| rand_currencies{ Instrument.new("#{@base}#{d}#{@counter}".to_sym) }}
   end
 
   it 'can be initialized with an existing instrument' do
@@ -45,13 +42,15 @@ describe Nodus::FX::Instrument do
   end
 
   it 'can be initialized with misc punctuation' do
-    rand_currencies{ Instrument.new("#{@base} #{@counter}") }
-    rand_currencies{ Instrument.new("#{@base}-#{@counter}") }
-    rand_currencies{ Instrument.new("#{@base}_#{@counter}") }
-    rand_currencies{ Instrument.new("#{@base}/#{@counter}") }
+    ' -_/'.each_char{|d| rand_currencies{ Instrument.new("#{@base}#{d}#{@counter}") }}
   end
 
   it 'can be initialized with lots of punctuation' do
     rand_currencies{ Instrument.new("#{@base}#{PUNCT.sample(rand_poisson(4))}#{@counter}") }
+  end
+
+  it 'returns the oanda id properly formatted' do
+    i = Instrument.new(:'eur/usd')
+    i.to_oanda_id.must_equal 'EUR_USD'
   end
 end
