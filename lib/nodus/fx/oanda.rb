@@ -13,6 +13,7 @@ module Nodus
       def defaults() PARAMS[@source] || {} end
 
       def parameterize(opts={})
+        @manual_start = true
         @source       = opts.delete(:source)       || :production
         error NotImplementedError, "Sandbox Oanda access not implemented- should be easy if you want it." if @source == :sandbox
         error ArgumentError,       "Oanda generator source must be one of [:production, :practice, :sandbox]" unless defaults.present?
@@ -59,12 +60,13 @@ module Nodus
         # TODO:
         #   - create new generator sessions (?)
         #   - 
-
+        #
         :stream
       end
 
       def stream
         streamer = ->(chunk, _rem, _tot) do
+          p chunk
           # TODO:
           #   - parse json chunk (assume it's always complete...ish?)
           #   - figure out output port to put the data on
@@ -74,16 +76,18 @@ module Nodus
           #   - possibly change the state based on lack of heartbeats for a given timespan (indicate gaps explicitly)
         end
 
-        # TODO:
-        #  - something like:
-        #      c = Excon.new('https://stream-fxtrade.oanda.com/v1/prices', headers: h)
-        #      q = {accountId: account_id, instruments: 'EUR_USD'}
-        #      c.get(query: q, response_block: streamer)
-        #      ...
-        #   - go to a reconnect state on recoverable exceptions (timeouts, bad chunks from streamer, etc.)
-        #   - exponential backoff
-        #   - possibly watch for market closings etc.
-        #
+        @stream_conn = Excon.new(@stream_root, headers: {'Authorization' => "Bearer #{@access_token}"}, persistent: true)
+        query = {accountId: account_id, instruments: instruments.map(&:to_oanda_id).join(',')}
+        begin
+          @stream_conn.get(path: 'v1/prices', query: query, response_block: streamer)
+
+          # TODO:
+          #   - go to a reconnect state on recoverable exceptions (timeouts, bad chunks from streamer, etc.)
+          #   - exponential backoff
+          #   - possibly watch for market closings etc.
+          #
+        end
+
         :done
       end
     end
