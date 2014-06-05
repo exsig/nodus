@@ -156,12 +156,13 @@ module Nodus
     def      output(sym, kind=Integer, desc=nil) @outputs  << OpenStruct.new(name: sym, kind: kind, desc: desc) end
 
     def initialize(*args, &block)
+      @manual_start = false
       @inputs  = [] + self.class.c_inputs
       @outputs = [] + self.class.c_outputs
       parameterize(*args, &block)
       validate_ports()
       methodize_ports()
-      restart()
+      restart() unless @manual_start
     end
 
     def restart
@@ -181,6 +182,7 @@ module Nodus
       end
       starting.receive
     end
+    alias_method :spawn, :restart
 
     def alive?
       @active && @thread.alive?
