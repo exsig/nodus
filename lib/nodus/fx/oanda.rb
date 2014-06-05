@@ -16,7 +16,7 @@ module Nodus
         @source       = opts.delete(:source)       || :production
         error NotImplementedError, "Sandbox Oanda access not implemented- should be easy if you want it." if @source == :sandbox
         error ArgumentError,       "Oanda generator source must be one of [:production, :practice, :sandbox]" unless defaults.present?
-        @access_token = opts.delete(:access_token) || ENV[defaults[:access_var] || '']
+        @access_token = opts.delete(:access_token) || (defaults[:access_var].blank? ? nil : ENV[defaults[:access_var]])
         error ArgumentError,       "No access_token specified. Can also put in env: #{PARAMS.map{|_,d|d[:access_var]}.join(' and/or ')}" if @access_token.blank? && @source != :sandbox
         @api_root     = opts.delete(:api_root)     || defaults[:api_root]
         @stream_root  = opts.delete(:stream_root)  || defaults[:stream_root]
