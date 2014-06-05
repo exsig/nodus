@@ -18,23 +18,21 @@ module Nodus
 
       def self.normalized_name(*name)
         name = name.pop if name.size == 1
-        if Array === name && name.size == 2
+        case name
+        when Array
+          error InstrumentNameError, name.pretty_inspect unless name.size == 2
           name.map do |c|
             c = c.to_s.strip.downcase
             error InstrumentNameError, name.pretty_inspect unless c =~ /^[a-z]{3}$/
             c.to_sym
           end
-        elsif String === name
+        when String
           pair_characters = name.each_char.select{|c| c =~ /[A-Za-z]/}
           error InstrumentNameError, name.pretty_inspect unless pair_characters.size == 6
           normalized_name(pair_characters[0..2].join, pair_characters[3..5].join)
-        elsif Instrument === name
-          [name.base, name.counter]
-        elsif Symbol === name
-          normalized_name(name.to_s)
-        else
-          error InstrumentNameError, name.pretty_inspect
-        end
+        when Instrument then [name.base, name.counter]
+        when Symbol     then normalized_name(name.to_s)
+        else error InstrumentNameError, name.pretty_inspect end
       end
     end
   end
