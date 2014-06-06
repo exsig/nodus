@@ -56,11 +56,16 @@ module Nodus
 
       state_method :start, :stream
 
+      # TODO: way to specify that it is a 'registered' generator for some stream/streams
+      #
       def start
         # TODO:
         #   - create new generator sessions (?)
         #   - 
         #
+        @session.close if @session
+        @session = Nodus::Session.new
+
         :stream
       end
 

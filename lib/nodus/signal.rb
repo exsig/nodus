@@ -1,4 +1,7 @@
-require 'securerandom'
+
+# -- save/stream a session to a signal / save as a signal
+# -- query general information about a signal
+
 
 module Nodus
 
@@ -13,14 +16,20 @@ module Nodus
   #   - attaching consumers w/ queries
   #   - ...
   class Signal
-    attr_reader :path_def
-    delegate :path, :table_name, :temp?, to: :path_def
 
-    def initialize(path=nil)
-      @path_def = SignalPath === path ? path : SignalPath.new(path) # nil value means temporary
+    # def self.new_from_path
+    # * path
+    # * live/after-the-fact generator node/node-group
+    # * 
 
-
-    end
+#    attr_reader :path_def
+#    delegate :path, :table_name, :temp?, to: :path_def
+#
+#    def initialize(path=nil)
+#      @path_def = SignalPath === path ? path : SignalPath.new(path) # nil value means temporary
+#
+#
+#    end
 
   end
 

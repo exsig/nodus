@@ -5,7 +5,6 @@ module SharedPathSpec
   it 'initializes correctly with a normal string' do
     init_path = random_path
     @subject.new(init_path).path.must_equal init_path
-    #SignalPath.new(init_path).path.must_equal init_path
   end
 
   it 'initializes with a hash and maintains ordering' do
@@ -48,9 +47,9 @@ describe Nodus::SignalPath do
   end
 end
 
-describe Nodus::Signal do
-  include SharedPathSpec
-  before do
-    @subject = Nodus::Signal
-  end
-end
+#describe Nodus::Signal do
+#  include SharedPathSpec
+#  before do
+#    @subject = Nodus::Signal
+#  end
+#end

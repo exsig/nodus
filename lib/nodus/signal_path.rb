@@ -1,3 +1,5 @@
+require 'securerandom'
+
 module Nodus
   class SignalPath
     attr_reader :path
