@@ -2,6 +2,8 @@ source "http://rubygems.org"
 # Dependencies required by gem
 gem 'activesupport', '>= 4.1.0'
 gem 'rubinius-actor'
+gem 'parser'
+gem 'unparser'
 gem 'sequel'
 gem 'sequel_pg', require: 'sequel'
 gem 'sequel_postgresql_triggers'
