@@ -20,6 +20,6 @@ end
 describe Walk do
   it 'outputs a bunch of stuff' do
     w = Walk.new
-    1000.times{ puts w.y.receive }
+    100.times{ puts w.y.receive }
   end
 end
