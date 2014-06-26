@@ -2,7 +2,8 @@
 
 _(EXPERIMENTAL)_
 
-Kahn Process Networks in Ruby. But different.
+Something between a Kahn Process Network and Algorithmic Skeleton for data-flow-like programming.
+
 
 == Contributing to nodus
  

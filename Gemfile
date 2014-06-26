@@ -1,13 +1,23 @@
 source "http://rubygems.org"
 # Dependencies required by gem
 gem 'activesupport', '>= 4.1.0'
-gem 'rubinius-actor'
-gem 'parser'
-gem 'unparser'
-gem 'sequel'
-gem 'sequel_pg', require: 'sequel'
-gem 'sequel_postgresql_triggers'
-gem 'excon'
+
+# gem 'rubinius-actor'
+
+# Will use these two for any genetic programming nodes
+# ----------------------------------------------------
+# gem 'parser'
+# gem 'unparser'
+
+# For future development of persistent/decoupled/cached nodes
+# ----------------------------------------------------
+# gem 'sequel'
+# gem 'sequel_pg', require: 'sequel'
+# gem 'sequel_postgresql_triggers'
+
+# For nodes that access external APIs
+# ----------------------------------------------------
+# gem 'excon'
 
 # Dependencies for gem development
 # (Includes everything needed to run rake, tests, features, etc.)

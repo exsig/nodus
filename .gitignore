@@ -22,3 +22,6 @@ Thumbs.db
 doc-pak
 description-pak
 .rspec
+
+# Only because this is a gem!
+Gemfile.lock
