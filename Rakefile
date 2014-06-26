@@ -25,7 +25,7 @@ Jeweler::Tasks.new do |gem|
                        for continuous streams of data.}.gsub(/\s+/,' ')
   gem.email       = "joseph.wecker@exsig.com"
   gem.authors     = ["Joseph Wecker"]
-  gem.version     = Nodus::Version::VERSION
+  #gem.version     = Nodus::Version::VERSION
 
   # (dependencies are defined in the Gemfile)
 end
@@ -48,7 +48,7 @@ task :default => :test
 
 require 'rdoc/task'
 Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
+  version = File.exist?('VERSION') ? File.read('VERSION') : (Nodus::Version::VERSION || '')
 
   rdoc.rdoc_dir = 'rdoc'
   rdoc.title = "nodus #{version}"
