@@ -23,7 +23,6 @@ Gem::Specification.new do |s|
     ".ruby-gemset",
     ".ruby-version",
     "Gemfile",
-    "Gemfile.lock",
     "LICENSE.txt",
     "OPERUM.md",
     "README.rdoc",
