@@ -1,8 +1,18 @@
 # nodus
 
-_(EXPERIMENTAL)_
+_(WARNING: EXPERIMENTAL)_
 
-Something between a Kahn Process Network and Algorithmic Skeleton for data-flow-like programming.
+Framework for [parallel](http://en.wikipedia.org/wiki/Parallelization)
+[data-flow](http://en.wikipedia.org/wiki/Dataflow) based applications.
+
+It is influenced by and similar to:
+
+ * [Kahn Process Networks](http://en.wikipedia.org/wiki/Kahn_process_networks)
+ * [Algorithmic Skeletons](http://en.wikipedia.org/wiki/Algorithmic_skeleton) (see also [here](https://github.com/ParaPhrase/skel))
+ * [Iteratee IO](http://okmij.org/ftp/Streams.html)
+ * And of course the hundreds of other reinventions with names like
+   `/(((data|signal|packet)?(stream|flow)|pipe(line)?|(flow|event|signal|reactive)-(processing|programming|architecture|computing|language)/`
+   combined with parallelization, concurrency, clustering paradigms, etc. etc...
 
 
 ## Contributing to nodus
@@ -12,9 +22,10 @@ Something between a Kahn Process Network and Algorithmic Skeleton for data-flow-
 * Fork the project.
 * Start a feature/bugfix branch.
 * Commit and push until you are happy with your contribution.
-* Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
-* Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
+* Ensure that it is accompanied with tests.
+* Please try not to mess with the Rakefile, version, or history etc. If you want to have your own version, or it is
+  otherwise necessary, then fine, but please isolate to its own commit so I can cherry-pick around it.
 
 ## Copyright
 
-Copyright (c) 2014 Joseph Wecker. See LICENSE.txt for further details.
+Copyright (c) 2014 Joseph Wecker. MIT License. See LICENSE.txt for further details.
