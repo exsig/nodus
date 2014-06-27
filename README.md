@@ -1,11 +1,11 @@
-= nodus
+# nodus
 
 _(EXPERIMENTAL)_
 
 Something between a Kahn Process Network and Algorithmic Skeleton for data-flow-like programming.
 
 
-== Contributing to nodus
+## Contributing to nodus
  
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
@@ -15,6 +15,6 @@ Something between a Kahn Process Network and Algorithmic Skeleton for data-flow-
 * Make sure to add tests for it. This is important so I don't break it in a future version unintentionally.
 * Please try not to mess with the Rakefile, version, or history. If you want to have your own version, or is otherwise necessary, that is fine, but please isolate to its own commit so I can cherry-pick around it.
 
-== Copyright
+## Copyright
 
 Copyright (c) 2014 Joseph Wecker. See LICENSE.txt for further details.
