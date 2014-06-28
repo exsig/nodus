@@ -1,9 +1,13 @@
-# Nodus
+Nodus
+============================================================================================================================
 
 _(WARNING: EXPERIMENTAL)_
 
+## Description
+
 Framework for [parallel](http://en.wikipedia.org/wiki/Parallelization)
 [data-flow](http://en.wikipedia.org/wiki/Dataflow) based applications.
+
 
 It is influenced by and similar to:
 
@@ -14,21 +18,80 @@ It is influenced by and similar to:
    `/(((data|signal|packet)?(stream|flow)|pipe(line)?|(flow|event|signal|reactive)-(processing|programming|architecture|computing|language)/`
    combined with parallelization, concurrency, clustering paradigms, etc. etc...
 
-## Description / Components
 
-### Stream
+
+
+
+Components
+------------------------------------------------------------------------------------------------------------------------------
+
+### Data #############################################
+
+| Thing     | Otherwise Known As |                                                    |
+|-----------|--------------------|----------------------------------------------------------|
+| Stream    | Flow, Signal                  | Related ordered data representation- bundled into tokens (chunks). A gradually consumed state |
+| Token     | Chunk, Element, Event, Sample | Coherent instance of stream data being mutated and passing through the pipelines (potentially in parallel) - special values of EOF & Exceptionals |
+
+#### Stream
 
 Defined by:
-  * The eventual property distribution of its constituent tokens (possibly given as a shorthand name/"token-type");
+  * The eventual property distribution of its constituent tokens (possibly given as a shorthand name/"token-type"),
+    which, because the token's internal state ends up mirroring the operations that have occurred, means it is also a
+    way of describing the graph of process nodes that act on tokens within the stream (explicitly or implicitly- don't
+    know yet) (usually all or a subset of a nodus application specification);
   * An origination node for that specific stream (not necessarily a standalone origination node like for an app)
-  *
+  * A unique session identifier (uuid) identifying this run-instance, possibly shared with other streams (or Nexus' /
+    Decouplers)
+  * Creates the initial instances of tokens, with a monotonic order indexed from the first token of the session. (Hence,
+    streams can be theoretically infinite into the future, but always have a finite well-defined past, at least in the
+    context of a session).
+  * Sometimes a version, which can affect caching, for example, or conflict resolution when a sink is permanently saving
+    state from a running stream, etc.
 
-### Token
+#### Token
 
-  * Has a "type"/name that also
+  * A chunk of data - the ordered atoms of a stream.
+  * Has a "type"/name that coincides with the stream
+  * Analogous to a rolling stone gathering moss. The token starts out very small, and accumulates more pieces of
+    state/data as it moves through the nodes, with it's most recent state being the most relevant for the next node.
+  * Has a tree-like internal view of the accumulated state that ends up mirroring the topology of the node network.
+
+#### Session
+
+  * The context within which the runtime system executes the dataflows/streams.
 
 
-### Application
+### Nodes ##############################################
+
+A node may be a generator for one or more streams AND/OR a sink for one or more streams, AND/OR an operator on one or
+more streams (accepting tokens from one or more upstream nodes and emitting them to one (or more?) downstream nodes.
+Generally though most nodes will deal with only a single stream- and most of those will be operators, with a generator
+at the beginning and a sink at the end.
+
+| Aspect     | Otherwise Known As  |   |
+|------------|---------------------|---|
+| Generator  | Source, Origin, Enumerator, Producer, Start | Has one or more output streams that originate there & are not among its incoming streams (although the incoming streams may have participated in its creation). |
+| Consumer   | Sink, Iteratee, Fold, Reducer, End | folds over one or more input streams & emits nothing except a final result/stats if the done/EOF token is encountered. Usually in charge of any external side-effects. |
+| Processor  | Filter, Enumeratee, Operator, Function, Convolution, Transformer | Receives a token from a stream and either passes it through or advances its state before outputting the same stream-type. |
+
+#### Generators
+
+#### Consumers
+
+A stream endpoint. Not referring to the fact that they simply accept tokens- but to the fact that once accepted they do
+not emit any more for that stream, it having been consumed.
+
+#### Processor
+
+
+
+#### Nexus / Decoupler Consumers
+
+
+### Application / Runtime ################################
+
+
+#### Nodus Application Specification
 
 _(could have just as easily been named 'Stream Processing Graph' or 'Nodus Application Specification', ...)_
 
@@ -51,11 +114,11 @@ In practical terms, it:
     implies batch-like single-run behavior rather than daemon-like), or persisting the final tokens (or a form
     thereof) in a Decoupler (persistent store separate from caches described shortly).
 
-### File/spec hierarchy, auto-loading, paths, ... (node-language agnosticism?)
+#### File/spec hierarchy, auto-loading, paths, ... (node-language agnosticism?)
 
 
 
-### Nodus Execution Engine (`nodus` command)
+#### Nodus Execution Engine (`nodus` command)
 
   * Parses/processes a nodus specification/application/standalone-process-graph
   * Starts everything up for the nodus and (normally) daemonizes
@@ -64,34 +127,18 @@ In practical terms, it:
   * Could eventually conceivably evolve into tools with higher levels of management/abstraction (for distributed
     processing and cluster management, for example)
 
-### Application Groups
+#### Application Groups
 
   * Ability for nodus to specify which applications should be running autonomously all the time (system-level
     daemonized), including restart policy and footprint monitoring vs. those that are experimental / dev / transient,
     vs. those that are something in-between.
 
 
-## Scratch
-
-#### Data
-
-Stream    | (Stream)     | related ordered data representation- bundled into tokens (chunks). A gradually consumed state
-Token     | (Chunk)      | coherent instance of stream data being mutated and passing through the pipelines (potentially in parallel) - special values of EOF & Exceptionals
-
-#### Nodes
-
-SourceNode | (Generator/Enumerator/Producer/Source)               | has output but no input (composition == concatenation of token pieces?)
-Node   | (Operator/Enumeratee/Filter/Convolution/Transformer) | Acts as both a consumer & generator (speaking of mutations of a single stream or the creation of new streams?)
- | (Consumer/Iteratee/Sink/Fold/Origin)                 | folds over one or more input streams & emits nothing except a final result/stats if the done/EOF token is encountered.
 
 
-#### Behavior
 
-Generator  | Node has one or more output streams that originate there & are not among its incoming streams (although
-             the incoming streams may have participated in its creation).
-Operator   | Receives a token from a stream and either passes it through or advances its state before outputting the
-             same stream-type.
-
+Scratch
+--------------------------------------------------------------------------------------------------
 
 ---
 
@@ -115,7 +162,8 @@ Generator from basic class via to_enum
 Generator from state-machine
 Generator from DSL
 
-## Contributing to nodus
+Contributing
+-------------------------------------------------------------------------------------------------
 
 * Check out the latest master to make sure the feature hasn't been implemented or the bug hasn't been fixed yet.
 * Check out the issue tracker to make sure someone already hasn't requested it and/or contributed it.
@@ -126,6 +174,9 @@ Generator from DSL
 * Please try not to mess with the Rakefile, version, or history etc. If you want to have your own version, or it is
   otherwise necessary, then fine, but please isolate to its own commit so I can cherry-pick around it.
 
-## Copyright
+
+
+Copyright
+-------------------------------------------------------------------------------------------------
 
 Copyright (c) 2014 Joseph Wecker. MIT License. See LICENSE.txt for further details.
