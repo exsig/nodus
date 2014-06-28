@@ -3,7 +3,8 @@ Nodus
 
 _(WARNING: EXPERIMENTAL)_
 
-## Description
+Description
+------------------------------------------------------------------------------------------------------------------------------
 
 Framework for [parallel](http://en.wikipedia.org/wiki/Parallelization)
 [data-flow](http://en.wikipedia.org/wiki/Dataflow) based applications.
@@ -19,6 +20,24 @@ It is influenced by and similar to:
    combined with parallelization, concurrency, clustering paradigms, etc. etc...
 
 
+### In More Detail ##################################
+
+
+- [ ] Guiding assumptions
+  - [ ] Steady-state
+  - [ ] Composable
+  - [ ] Proportionate
+- [ ] Simple single-stream sequential
+  - [ ] URI-like notation
+  - [ ] Token state accumulation
+- [ ] Single-stream sequential with explicit sink
+- [ ] Single-stream parallel
+  - [ ] Branches
+  - [ ] Forks
+  - [ ] Waypoints
+  - [ ] Pattern Branching
+- [ ] Multi-stream
+- [ ] Getting away with duck-typing
 
 
 
@@ -65,21 +84,20 @@ Defined by:
 
 A node may be a generator for one or more streams AND/OR a sink for one or more streams, AND/OR an operator on one or
 more streams (accepting tokens from one or more upstream nodes and emitting them to one (or more?) downstream nodes.
-Generally though most nodes will deal with only a single stream- and most of those will be operators, with a generator
-at the beginning and a sink at the end.
+Generally though most nodes will deal with only a single stream- and most of those will be processor nodes, sandwiched
+between a generator at the beginning and a sink at the end.
 
 | Aspect     | Otherwise Known As  |   |
 |------------|---------------------|---|
 | Generator  | Source, Origin, Enumerator, Producer, Start | Has one or more output streams that originate there & are not among its incoming streams (although the incoming streams may have participated in its creation). |
-| Consumer   | Sink, Iteratee, Fold, Reducer, End | folds over one or more input streams & emits nothing except a final result/stats if the done/EOF token is encountered. Usually in charge of any external side-effects. |
-| Processor  | Filter, Enumeratee, Operator, Function, Convolution, Transformer | Receives a token from a stream and either passes it through or advances its state before outputting the same stream-type. |
+| Sink       | Consumer, Iteratee, Fold, Reducer, End | folds over one or more input streams & emits nothing except a final result/stats if the done/EOF token is encountered. Usually in charge of any external side-effects. |
+| Processor  | Filter, Enumeratee, Operator, Function, Convolution-operation, Transformer | Receives a token from a stream and either passes it through or advances its state before outputting the same stream-type. |
+
+
 
 #### Generators
 
-#### Consumers
-
-A stream endpoint. Not referring to the fact that they simply accept tokens- but to the fact that once accepted they do
-not emit any more for that stream, it having been consumed.
+#### Sink
 
 #### Processor
 
