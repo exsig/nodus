@@ -46,19 +46,11 @@ It is influenced by and similar to:
 This library and associated commandline tools are most appropriate for these types of (overlapping and somewhat
 redundant) problems & constraints:
 
-##### * __Dataflow__
-Problems where the easiest way to look at it is a (possibly branching) pipeline of operations on a stream of data.
-
-##### * __Steady-State__
-  Where the processing nodes and overall application have upper bounds on their memory requirements in
-  order to safely and reliably handle very long running streams.
-
-* __Functional__: Most of the generator & processing nodes are usually assumed to be side-effect-free and pure (at least
-  given all previous inputs).
-* __Composable__: Easy to make nodes out of combinations and networks of other nodes
-* __Proportionate__: Very easy and fast to do a simple pipeline (for example some simple functions that mutate an
-  integer from within the console), but easily scales up to more complex production-ready solutions/projects. It strives
-  to maintain the following inequality:  `effort ≤ problem‐complexity`.
+| __Dataflow-Oriented__ | Problems where the easiest way to look at it is a (possibly branching) pipeline of operations on a stream of data. |
+| __Steady-State__ | Where the processing nodes and overall application have upper bounds on their memory requirements in order to safely and reliably handle very long running streams. |
+| __Functional__   | Most of the generator & processing nodes are usually assumed to be side-effect-free and pure (at least given all previous inputs). |
+| __Composable__   | Easy to make nodes out of combinations and networks of other nodes |
+| __Proportionate__| Very easy and fast to do a simple pipeline (for example some simple functions that mutate an integer from within the console), but easily scales up to more complex production-ready solutions/projects. It strives to maintain the following inequality:  `effort ≤ problem‐complexity`. |
 
 It is additionally tuned for (but doesn't assume) problems with the following properties:
 
