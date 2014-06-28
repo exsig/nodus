@@ -46,6 +46,8 @@ It is influenced by and similar to:
 This library and associated commandline tools are most appropriate for these types of (overlapping and somewhat
 redundant) problems & constraints:
 
+| Aspect |      |
+| ------ | ---- |
 | __Dataflow-Oriented__ | Problems where the easiest way to look at it is a (possibly branching) pipeline of operations on a stream of data. |
 | __Steady-State__ | Where the processing nodes and overall application have upper bounds on their memory requirements in order to safely and reliably handle very long running streams. |
 | __Functional__   | Most of the generator & processing nodes are usually assumed to be side-effect-free and pure (at least given all previous inputs). |
