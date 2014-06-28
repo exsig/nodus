@@ -49,7 +49,7 @@ redundant) problems & constraints:
 |        |      |
 | ------ | ---- |
 | __Dataflow-Oriented__ | Problems where the easiest way to look at it is a (possibly branching) pipeline of operations on a stream of data. |
-| __Steady-State__ | Where the processing nodes and overall application have upper bounds on their memory requirements in order to safely and reliably handle very long running streams. |
+| __Steady-State__ | Where the processing nodes and overall application have upper bounds on their memory requirements in order to safely and reliably handle very long running streams. i.e., bounded online algorithms and [streaming-algorithms](http://en.wikipedia.org/wiki/Streaming_algorithm) |
 | __Functional__   | Most of the generator & processing nodes are usually assumed to be side-effect-free and pure (at least given all previous inputs). |
 | __Composable__   | Easy to make nodes out of combinations and networks of other nodes |
 | __Proportionate__| Very easy and fast to do a simple pipeline (for example some simple functions that mutate an integer from within the console), but easily scales up to more complex production-ready solutions/projects. It strives to maintain the following inequality:  `effort ≤ problem‐complexity`. |
@@ -68,6 +68,18 @@ It is additionally tuned for (but doesn't assume) problems with the following pr
 | __Daemonized__        | Where certain stream sources and graphs of processors and sinks should be managed as a single long-lived system process when desired. |
 | __Simulations/Reruns__| Persistent caching nodes (nexus decouplers) etc. allow one to easily simulate reruns of past parts of a stream- possibly generating a new version of subsequently persisted results. |
 
+
+#### _Example_: Single-Stream Sequential
+
+    ┌───┐     ┌──────┐     ┌──────┐
+    │ G │ ──> │ f(x) │ ──> │ g(x) │
+    └───┘     └──────┘     └──────┘
+
+
+
+
+---
+
 Components
 ------------------------------------------------------------------------------------------------------------------------------
 
@@ -76,7 +88,7 @@ Components
 | Thing     | Otherwise Known As |                                                    |
 |-----------|--------------------|----------------------------------------------------------|
 | Stream    | Flow, Signal                  | Related ordered data representation- bundled into tokens (chunks). A gradually consumed state |
-| Token     | Chunk, Element, Event, Sample | Coherent instance of stream data being mutated and passing through the pipelines (potentially in parallel) - special values of EOF & Exceptionals |
+| Token     | Packet, Event, Chunk, Element, Sample | Coherent instance of stream data being mutated and passing through the pipelines (potentially in parallel) - special values of EOF & Exceptionals |
 
 #### Stream
 
