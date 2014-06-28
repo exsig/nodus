@@ -136,11 +136,11 @@ In practical terms, it:
 
 
 
+---
 
 Scratch
 --------------------------------------------------------------------------------------------------
 
----
 
 Token: any object instance but usually openstruct with hash-like access as well (so like HashWithIndifferentAccess) but with
 WRITE-ONCE semantics! (throws error if the same process/node tries to write the same field a second time)
