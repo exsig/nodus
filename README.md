@@ -46,7 +46,7 @@ It is influenced by and similar to:
 This library and associated commandline tools are most appropriate for these types of (overlapping and somewhat
 redundant) problems & constraints:
 
-| Aspect |      |
+|        |      |
 | ------ | ---- |
 | __Dataflow-Oriented__ | Problems where the easiest way to look at it is a (possibly branching) pipeline of operations on a stream of data. |
 | __Steady-State__ | Where the processing nodes and overall application have upper bounds on their memory requirements in order to safely and reliably handle very long running streams. |
@@ -56,20 +56,17 @@ redundant) problems & constraints:
 
 It is additionally tuned for (but doesn't assume) problems with the following properties:
 
-* __Parallel__: For example, map-reduce type problems, or wherever strictly sequential simply isn't required.
-* __Ordered__: When there is a natural ordering to the tokens. e.g., a time-series, or bytes from most IO streams;
-* __State-Accumulation__: Where the tokens can accumulate state and where processing nodes can look at previous process
-  results relative to that token as they pass through the graph. As opposed to destructive changes to the token at each
-  process or lack of tokens altogether (like simple functions).
-* __Multi-Stream__: Potentially create secondary streams that are unsynchronized with the original stream;
-* __Coordinated__: Dataflow type problems where there is a need to synchronize/coordinate multiple orthogonal streams;
-* __Decoupled__: A way to cache intermediate results (e.g., half way through the pipeline) so that multiple stream
-  processing applications can be simultaneously writing results and other unrelated processes reading a stream of
-  results- sometimes in sync with when they are being written by the decoupled process. (some good examples to come).
-* __Daemonized__: Where certain stream sources and graphs of processors and sinks should be managed as a single
-  long-lived system process when desired.
-* __Simulations/Reruns__: Persistent caching nodes (nexus decouplers) etc. allow one to easily simulate reruns of past
-  parts of a stream- possibly generating a new version of subsequently persisted results.
+
+|        |      |
+| ------ | ---- |
+| __Parallel__          | For example, map-reduce type problems, or wherever strictly sequential simply isn't required.  |
+| __Ordered__           | When there is a natural ordering to the tokens. e.g., a time-series, or bytes from most IO streams; |
+| __State-Accumulation__| Where the tokens can accumulate state and where processing nodes can look at previous process results relative to that token as they pass through the graph. As opposed to destructive changes to the token at each process or lack of tokens altogether (like simple functions). |
+| __Multi-Stream__      | Potentially create secondary streams that are unsynchronized with the original stream; |
+| __Coordinated__       | Dataflow type problems where there is a need to synchronize/coordinate multiple orthogonal streams; |
+| __Decoupled__         | A way to cache intermediate results (e.g., half way through the pipeline) so that multiple stream processing applications can be simultaneously writing results and other unrelated processes reading a stream of results- sometimes in sync with when they are being written by the decoupled process. (some good examples to come). |
+| __Daemonized__        | Where certain stream sources and graphs of processors and sinks should be managed as a single long-lived system process when desired. |
+| __Simulations/Reruns__| Persistent caching nodes (nexus decouplers) etc. allow one to easily simulate reruns of past parts of a stream- possibly generating a new version of subsequently persisted results. |
 
 Components
 ------------------------------------------------------------------------------------------------------------------------------
