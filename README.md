@@ -71,11 +71,19 @@ It is additionally tuned for (but doesn't assume) problems with the following pr
 
 #### _Example_: Single-Stream Sequential
 
-    ┌───┐     ┌──────┐     ┌──────┐
-    │ G │ ──> │ f(x) │ ──> │ g(x) │
-    └───┘     └──────┘     └──────┘
+    +---+     +------+     +------+
+    | G | --> | f(x) | --> | g(x) | -->
+    +---+     +------+     +------+
 
-
+* No sink specified at the end, so it simply outputs everything to STDOUT
+* Generator types, from simplest to most complex:
+  1. Scalar? Not very useful; does it make sense to allow it?
+  2. Simpler proc/block/lambda than an enumerable?
+  3. Any enumerable or even just an object with an `each` method (will be made lazy if it isn't already)
+  4. Simple DSL
+  5. State-machine class
+  6. Decoupler
+  7. Synchronized Decoupler
 
 
 ---
@@ -207,17 +215,6 @@ suggested behavior:
   - unlock-all-field-values (for when a node starts its turn | possibly specify that this proc/node is one that can write to it)
   - exception on rewrite of a field after it's locked
   -
-
-
-
----- overkill ----
-Generator from simple-proc
-Generator from Enum
-Generator from Lazy Enumerator
-Generator from basic class
-Generator from basic class via to_enum
-Generator from state-machine
-Generator from DSL
 
 Contributing
 -------------------------------------------------------------------------------------------------
