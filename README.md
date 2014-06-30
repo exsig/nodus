@@ -78,7 +78,8 @@ It is additionally tuned for (but doesn't assume) problems with the following pr
 * No sink specified at the end, so it simply outputs everything to STDOUT
 * Generator types, from simplest to most complex:
   1. Scalar? Not very useful; does it make sense to allow it?
-  2. Simpler proc/block/lambda than an enumerable?
+  2. Simpler proc/block/lambda than an enumerable? - instantiate via implicit counter generator with an offset which
+     uses the simple proc as the next block (so you could have a generator such as `->(x){Math.sin(x/100.0)}`)
   3. Any enumerable or even just an object with an `each` method (will be made lazy if it isn't already)
   4. Simple DSL
   5. State-machine class
@@ -148,6 +149,52 @@ By default Nodes handle data coming in from a single stream.
 
 #### Generators
 
+##### Built in Generators
+
+I'm going to implement these as I need them. Feel free to implement any. Highlighted if it's going to be needed soon.
+The hierarchy below doesn't necessarily indicate the namespace- especially for some elementary ones...
+
+- [ ] **sequences**/counters
+  - [ ] deterministic
+    - [ ] integer
+      - [ ] monotonic
+      - [ ] sequence ... (e.g., from <http://oeis.org>)
+    - [ ] real
+      - [ ] ... (monotonic with offsets, scaling, ...)
+    - [ ] ... (e.g., complex?, digits of irrationals like pi, ...)
+  - [ ] stochastic (or deterministic with seed in some cases)
+    - [ ] rng ... (prng, high quality, ...)
+    - [ ] quasi-random ...
+    - [ ] distributions ...
+- [ ] **clocks**/timers ... (including simulated timers? e.g., meaningful timing sequence without waiting the actual intervals between tokens...)
+- [ ] **system**
+  - [ ] state changes (e.g., network connectivity, service status, ...)
+  - [ ] ... (e.g., resource utilization, uptime, network load, ...)
+- [ ] **interprocess**
+  - [ ] signals
+  - [ ] argv
+  - [ ] file
+    - [ ] simple/read
+    - [ ] followed (i.e., `tail -f`-like or even `-F`)
+  - [ ] database ... (via query or change-monitoring etc.)
+  - [ ] pipe
+    - [ ] stdin
+    - [ ] named
+    - [ ] unix pipe (via file descriptor)
+  - [ ] argf (combo stdin and/or file(s))
+  - [ ] message queue
+  - [ ] semaphore
+  - [ ] shared memory
+  - [ ] mmap
+  - [ ] unix socket
+  - [ ] net
+    - [ ] socket
+    - [ ] secure socket
+    - [ ] HTTP
+    - [ ] HTTPS
+    - [ ] ... (e.g., AMQP, Erlang-node, ...)
+
+
 #### Sink
 
 #### Processor
@@ -172,6 +219,12 @@ will only be activated by the next token- at which point the syncpoint will have
 channel and the new token coming in the other- basically turning into a Junction. In fact, maybe implemented via
 Junction underneath..
 
+Implementing a Junction node requires that it has to actively use actor-like semantics (including timeouts and possibly
+polling multiple streams) to request tokens on the input streams. [implemented by the fact that in reality it is waiting
+on all streams at all times, and then decides whether it applies to the given wait condition].
+
+
+
 
 **Probable Future**
 
@@ -189,6 +242,8 @@ To implement as the need arises
 
 * distributed map/fold/...
 * mux / demux (tokens only go down one of two or more paths)
+
+
 
 ### Application / Runtime ################################
 
