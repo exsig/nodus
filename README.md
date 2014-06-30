@@ -139,6 +139,10 @@ between a generator at the beginning and a sink at the end.
 | Generator  | Source, Origin, Enumerator, Producer, Start | Has one or more output streams that originate there & are not among its incoming streams (although the incoming streams may have participated in its creation). |
 | Sink       | Consumer, Iteratee, Fold, Reducer, End | folds over one or more input streams & emits nothing except a final result/stats if the done/EOF token is encountered. Usually in charge of any external side-effects. |
 | Processor  | Filter, Enumeratee, Operator, Function, Convolution-operation, Transformer | Receives a token from a stream and either passes it through or advances its state before outputting the same stream-type. |
+| Junction   | Whenever a node has input on more than one signal |
+
+By default Nodes handle data coming in from a single stream.
+
 
 
 
@@ -148,10 +152,43 @@ between a generator at the beginning and a sink at the end.
 
 #### Processor
 
+#### Specialized Nodes & Compositions
+
+**Intra-Stream**
+
+| Type      | Behavior |
+|-----------|----------|
+| Pipe      | Sequentially applies operations to a token. Still gains parallelism because multiple tokens can be in the pipeline at the same time |
+| Fork/Tee  | Forks off one or more branches of execution that will happen independently of the parent sequence |
+| Branch    | Branches into two or more lines of execution that are finished before execution continues in the parent |
+| Select    | Selects some other combination of the token's data elements to pass on to the next node. Possibly option to add automatically on other composition types? Or possibly some syntactic sugar? |
+| Sync      | Specifies that execution is to sync back up at a SyncPoint |
+| SyncPoint | A SyncPoint isn't activated until all nodes ending with a Sync with the same label are done for the given token. (manipulate 'current' data in token? anonymous uuid sync-nodes to implement branching etc.? timeouts / conditional timeouts / more complex logic given a simple list of the current status of everything that may sync with it?) |
+
+**Inter-Stream**
+
+Idea for Cycles: If a token encounters a sync for a syncpoint that it has already passed, it implies that the syncpoint
+will only be activated by the next token- at which point the syncpoint will have a copy of the old token coming in one
+channel and the new token coming in the other- basically turning into a Junction. In fact, maybe implemented via
+Junction underneath..
 
 
-#### Nexus / Decoupler Consumers
+**Probable Future**
 
+| Type      | Behavior |
+|-----------|----------|
+| Switch    | A branch node combined with a select node on each branch - switch/case-statement like semantics |
+| Tap       | Fork that can be injected at runtime that acts like an observer for side-effects etc. |
+| Cached    | Wraps around any referentially transparent node (possibly implemented via memory-only decouplers?) |
+| Persisted | Like cached but persists in a database (for example). Allows groups of nodes to be decoupled |
+| Nexus     | Specialized generator that uses a query against the persisted output of another app as its generating function- potentially even synchronized with current processes saving to that persisted location |
+
+**Possible Future**
+
+To implement as the need arises
+
+* distributed map/fold/...
+* mux / demux (tokens only go down one of two or more paths)
 
 ### Application / Runtime ################################
 
