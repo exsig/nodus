@@ -185,6 +185,9 @@ Operate on data within a single stream
 
 #### Stream-level Nodes (Inter-stream)
 
+* `Application`: Adhoc collection of process networks meant to be run by itself. Usually with a single generator and a
+  single final output sink- although that stuff can be inferred potentially. While it's meant to be standalone, other
+  nodes should still be allowed to use it when composing more.
 * `Generators`: Shorthand for a node with zero input streams and one or more output streams. In a broader semantic
   perspective a generator is a node that creates any new streams regardless of whether it has input streams (maybe we
   should call those `Originators` or something instead?)
