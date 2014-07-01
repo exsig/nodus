@@ -1,0 +1,70 @@
+
+
+# Basic: 
+
+
+
+# class TheNode < Nodus::Node
+#   def parameterize
+#   end
+# 
+#   def process
+# 
+#   end
+# end
+
+# class Ticker
+#   include Node
+# 
+#   def initialize(symbol)
+#     @symbol = symbol
+#   end
+# 
+#   def looped_run
+#     @last_price ||= 60 + rand(30)
+#     @last_price += @rand(-4..4)
+#     emit @last_price
+#   end
+# end
+
+class Ticker
+  def initialize(symbol)
+    @symbol = symbol
+  end
+
+  def each
+    loop do
+      @last_price ||= 60 + rand(30)
+      @last_price += @rand(-4..4)
+      emit [@last_price, Time.now]
+    end
+  end
+end
+
+
+def ticker_for(symb, high, low)
+  Pipe[Ticker.new(symb), Switch[->(x,_){x > high}, ->(x,t){ puts "+++ #{t}: Price above #{high}: #{x}" },
+                                ->(x,_){x < low }, ->(x,t){ puts "--- #{t}: Price below #{low }: #{x}" }]]
+end
+
+
+
+# node to node transformations
+# Composition operators NodusClass[...] expected to return another kind of Nodus class.
+# --- shorthand for currying parameters (including changing the description) via inheritance
+#
+# parameters = standardized key/value pairs so specialization works
+#            = always allow lambda/proc so it gets evaluated per incoming token(?) (implies parameterization gets set
+#            more than once...  hmmm... maybe a bad idea)
+#
+
+
+# P[N[:rand_dist_exp,5],
+# 
+# 
+# pipe rand_dist_exp(5)
+# 
+# junction(rand_dist_exp(5),
+#          rand_dist_exp(5),
+#          rand_dist_gaus(0,2)) 
+# 
