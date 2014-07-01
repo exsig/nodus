@@ -1,0 +1,4 @@
+node        { shape: circle; }
+node.source { shape: rect; }
+
+[ g1 ]{class:source;} --> [a] --> [b] --> [c] --> [ ]
