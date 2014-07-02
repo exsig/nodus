@@ -10,13 +10,15 @@ Framework for [parallel](http://en.wikipedia.org/wiki/Parallelization)
 [data-flow](http://en.wikipedia.org/wiki/Dataflow) based applications.
 
 
-It is influenced by and similar to:
+It is influenced by, inspired by, and in many cases similar to:
 
+ * [Functional Reactive Programming](http://en.wikipedia.org/wiki/Functional_reactive_programming) (also
+   [here](http://www.reactivemanifesto.org/))
  * [Kahn Process Networks](http://en.wikipedia.org/wiki/Kahn_process_networks)
  * [Algorithmic Skeletons](http://en.wikipedia.org/wiki/Algorithmic_skeleton) (see also [here](https://github.com/ParaPhrase/skel))
  * [Iteratee IO](http://okmij.org/ftp/Streams.html)
- * [Functional Reactive Programming](http://en.wikipedia.org/wiki/Functional_reactive_programming) (also
-   [here](http://www.reactivemanifesto.org/))
+ * [Railway Oriented Programming](http://www.slideshare.net/ScottWlaschin/railway-oriented-programming)
+ * [Erlang](http://www.erlang.org/)
  * And of course the hundreds of other reinventions with names like
    `/(((data|signal|packet)?(stream|flow)|pipe(line)?|(flow|event|signal|reactive)-(processing|programming|architecture|computing|language)/`
    combined with the multitude of parallelization, concurrency, and clustering paradigms, etc. etc...
@@ -165,15 +167,20 @@ example, or default to stdin, argf, etc...)
 Operate on data within a single stream
 
 
-| Type      | Behavior |
-|-----------|----------|
-| (Process) | (Map...) Simple function on latest token data |
-| Pipe      | Chains intra-stream nodes together to operate on a token sequentially |
-| Branch    | Sends same token down multiple parallel branches (w/ or w/o conditions, w/ or w/o automatic remerge (wait) (?), w/ or w/o infered token subselection). Some paths may be skipped/short-circuited due to conditions. |
-| View      | (Select?) Changes what the next node will consider the "active data" for the token. |
-| Wait      | (Merge, Synchronize) Named synchronization point that also causes a "view" to be the combination of all merged branches.  timeout logic, subselection logic, etc. |
-| Tap       | Observer, splice, tee ... Semantic sugar to specify a non-synchronizing branch off of a point in a stream from the perspective of the branch (as if it were a generator). Can also be dynamic and/or temporary. |
-| (Cached)  | Wrap around a node if it has referential transparency (given all previous input). Might not implement for a while |
+| Type       | Behavior |
+|------------|----------|
+| Pipe       | Chains intra-stream nodes together to operate on a token sequentially |
+| Branch     | Sends same token down multiple parallel branches (w/ or w/o conditions, w/ or w/o automatic remerge (wait) (?), w/ or w/o infered token subselection). Some paths may be skipped/short-circuited due to conditions. |
+| Tap        | Observer, splice, tee ... Semantic sugar to specify a non-synchronizing branch off of a point in a stream from the perspective of the branch (as if it were a generator). Can also be dynamic and/or temporary. |
+| (Cached)   | Wrap around a node if it has referential transparency (given all previous input). Might not implement for a while |
+|            | |
+| Process    | (Map, Node, Function, ...) Simple function on latest token data |
+|   System   | A specialized Process that interfaces with an external application (via stdin/stdout/stderr for the most part?) |
+|   External | Another specialized Process that interfaces with an external application, this time via some other IPC call/response mechanisms |
+|   View     | (Select?) Changes what the next node will consider the "active data" for the token. |
+|            | |
+| Wait       | (Merge, Synchronize) Named synchronization point that also causes a "view" to be the combination of all merged branches.  timeout logic, subselection logic, etc. |
+| 
 
 **NOTES:**
 
@@ -246,6 +253,9 @@ Operate on data within a single stream
       - ... other enumerable & functional operators that act on the whole population.
   - **Reject**: (filter) Filters out specified tokens
   - **Select**: (grep, search) Selects specified tokens
+  - **Reactors**: Nodes that give an impulse when they encounter certain conditions on the input stream: specifically
+    for monitoring and reacting to certain conditions like queue lengths etc. (can be thought of as being implemented
+    via -->[tap]-->[select])
   - **Mutate**: Timing of new stream is the same as input, but data has been mutated in a way that incompatible with the
     incoming stream
   - *Future*:
@@ -275,6 +285,8 @@ Operate on data within a single stream
 * `Scatter` junctions:
   - **Switch**: output streams contain subsets of the input tokens where each token travels down a path (or more than
     one?) determined by a case statement. (can be thought of as being implemented via -->[branch]--*>[filter])
+  - **StateSwitch**: input tokens get fed to output stream depending on the last given token from a different input
+    stream.
 
 * Generic custom `Junction`s: Implementing a Junction node requires that it has to actively use actor-like semantics
   (including timeouts and possibly polling multiple streams) to request tokens on the input streams. [implemented by the
