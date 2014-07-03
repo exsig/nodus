@@ -1,0 +1,49 @@
+digraph GRAPH_0 {
+
+  graph [ rankdir=LR ];
+  node [ shape=circle, fontname=Helvetica, color="#222222", fontcolor="#444444" ];
+  edge [ color="#555555", arrowsize=0.5 ]
+  rank=source
+  compound=true
+  color="#444444"
+
+  G [shape=trapezium,orientation=270,style=filled,fillcolor="#CCEEDD"]
+  B [shape=triangle,orientation=90,style=filled,fillcolor="#EEDDCC",label=""]
+  M [shape=triangle,orientation=270,style=filled,fillcolor="#EEDDCC",label=""]
+
+  // node [
+  //   fillcolor=white,
+  //   fontsize=11,
+  //   shape=circle,
+  //   style=filled ];
+
+  "#9" [ color="#ffffff", label=" ", style=filled ]
+
+  G -> a -> B
+  B -> b
+  B -> c
+  B -> d
+  B -> e
+  c -> M
+  d -> M
+  M -> "#9"
+  subgraph cluster0 {
+    e -> f -> g -> h
+    color="#DDDDDD"
+  }
+  subgraph cluster1 {
+    b -> x
+    color="#DDDDDD"
+  }
+
+  subgraph cluster2 {
+    d
+    color="#DDDDDD"
+  }
+  subgraph cluster3 {
+    c
+    color="#DDDDDD"
+  }
+  x -> M
+  h -> M
+}
