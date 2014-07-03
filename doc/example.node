@@ -1,5 +1,24 @@
 
 
+
+
+node :app,      :the_gen >> :a >> :b
+node :the_gen,  1..1000
+node :a, 
+
+N[:app] = N[:the_gen] >> N[:a] >> N[:b]
+
+
+Nodus::Node.new do
+  app               = the_gen | a | b | stdout
+
+  the_gen(max=1000) = { 1..max } # Generator because no arity
+  a                 = {|x| x * 2 }
+  b                 = {|x| x + 100 }
+end
+
+  #pseudo_tick(first) = {
+
 # Basic: 
 
 
