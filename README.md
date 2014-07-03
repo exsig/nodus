@@ -179,7 +179,7 @@ Operate on data within a single stream
 |   External | Another specialized Process that interfaces with an external application, this time via some other IPC call/response mechanisms |
 |   View     | (Select?) Changes what the next node will consider the "active data" for the token. |
 |            | |
-| Wait       | (Merge, Synchronize) Named synchronization point that also causes a "view" to be the combination of all merged branches.  timeout logic, subselection logic, etc. |
+| Recombine  | (Wait, Merge, Synchronize, Waypoint) Named synchronization point that also causes a "view" to be the combination of all merged branches.  timeout logic, subselection logic, etc. |
 | 
 
 **NOTES:**
@@ -279,6 +279,12 @@ Operate on data within a single stream
     that this can cause non-steady-state behavior (including even race conditions) if one of the streams bottlenecks and
     the other stream builds up a huge backlog. (Need to at least throw an error when this seems like it's happening, and
     ideally even have mechanisms for automatically dropping, etc.)
+  - **AggregateZip**: emits an output token when at least one of every input stream is received. Tokens received from
+    streams multiple times while waiting for the first token on one of the other streams are aggregated together (so the
+    final resulting token contains a vector for each incoming stream, with every vector containing at least one item and
+    at least one vector containing _only_ one item [the last stream to give an inbound token while the others were
+    building up]).
+  - **StreamFold**: has a kernel that updates state and/or outputs a token at any input receipt from any stream.
   - *Future*
     - concat (if it's ever actually needed- nodus isn't really meant for it...)
 
