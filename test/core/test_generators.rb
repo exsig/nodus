@@ -1,5 +1,7 @@
 require_relative '../helper.rb'
 
+# NOTE: more general generator creation tests are in test_node
+
 # describe Enumerator do
 #   it 'exposes a to_node method' do
 #     Enumerator.public_instance_methods.must_include :to_node
