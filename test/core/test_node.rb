@@ -10,7 +10,7 @@ describe Nodus::StreamPort do
     StreamPort.new(nil, :str).main.must_be_kind_of   BranchPort
     StreamPort.new(nil, :str)[:main].must_be_kind_of BranchPort
     StreamPort.new(nil, :str)[0].must_be_kind_of     BranchPort
-    StreamPort.new(nil, :str)[1].must_equal          nil
+    StreamPort.new(nil, :str)[1].must_be_nil
   end
 end
 
@@ -148,6 +148,16 @@ describe Nodus::Node do
   end
 end
 
+module MiniTest::Assertions
+  def assert_valid_binding(obj)
+    msg = "expected a #{obj} to be a valid binding [input_port, output_port]"
+    assert Array === obj, msg
+    assert obj[0].kind_of?(InputBranchPort), msg
+    assert obj[1].kind_of?(OutputBranchPort), msg
+  end
+end
+Object.infect_an_assertion :assert_valid_binding, :must_be_valid_binding, :only_one_argument
+
 describe 'Node ports' do
   before do
     class NodeA < Node
@@ -164,14 +174,23 @@ describe 'Node ports' do
       end
     end
 
+    class NodeC < Node
+      def initialize(*)
+        super
+        input  :b_input
+        output :b_output
+      end
+    end
     @a = NodeA[:the_a]
     @b = NodeB[:the_b]
+    @c = NodeC[:the_c]
   end
 
   after do
-    @a = @b = nil
+    @a = @b = @c = nil
     remove_class :NodeA
     remove_class :NodeB
+    remove_class :NodeC
   end
 
   it 'can be accessed easily to any depth' do
@@ -188,18 +207,19 @@ describe 'Node ports' do
     @b.outputs.b_output2.main.full_name.must_equal 'the_b.outputs.b_output2.main'
   end
 
+  it 'exposes correct binding side depending on type' do
+    @a.inputs.a_input.must_respond_to :listen_to
+    @a.inputs.a_input.wont_respond_to :add_subscriber
+    @b.outputs.b_output.must_respond_to :add_subscriber
+    @b.outputs.b_output.wont_respond_to :listen_to
+  end
+
   it 'can be bound together from input perspective' do
-    a,b = @a.inputs.a_input.listen_to(@b.outputs.b_output)
-    a.must_be_kind_of InputBranchPort
-    b.must_be_kind_of OutputBranchPort
-    a.wont_equal      b
+    @a.inputs.a_input.listen_to(@b.outputs.b_output).must_be_valid_binding
   end
 
   it 'can be bound together from output perspective' do
-    a,b = @b.outputs.b_output.add_subscriber(@a.inputs.a_input)
-    a.must_be_kind_of InputBranchPort
-    b.must_be_kind_of OutputBranchPort
-    a.wont_equal      b
+    @b.outputs.b_output.add_subscriber(@a.inputs.a_input).must_be_valid_binding
   end
 
   it 'will not allow an input to be bound to more than one' do
@@ -225,6 +245,20 @@ describe 'Node ports' do
     binding2 = @b.outputs.b_output.add_subscriber(@a.inputs.a_input)
     binding1.must_equal binding2
     @b.outputs.b_output.main.subscribers.size.must_equal 1
+  end
+
+  it 'allows binding at all levels of detail' do
+    input_ports  = [@a, @a.inputs.a_input, @a.inputs[:a_input], @a.inputs.a_input.main, @a.inputs.a_input[:main],
+                    @a.inputs.a_input[0], @a.inputs[0][0], @a.inputs[0]]
+    output_ports = [@c, @c.outputs.b_output, @c.outputs[:b_output], @c.outputs.b_output.main,
+                    @c.outputs.b_output[:main], @c.outputs.b_output[0], @c.outputs[0][0], @c.outputs[0]]
+
+    input_ports.each do |ip|
+      output_ports.each do |op|
+        ip.listen_to(op).must_be_valid_binding
+        op.add_subscriber(ip).must_be_valid_binding
+      end
+    end
   end
 
 

@@ -32,6 +32,8 @@
 
 
 module Nodus
+  def_exception :AmbiguousBinding, "Ambiguous binding; select a more specific stream/branch port: %s", ArgumentError
+
   class BranchPort
     attr_reader :name
     def initialize(parent_stream_port, name)
@@ -39,15 +41,15 @@ module Nodus
     end
 
     def full_name()     "#{@stream_port.try(:full_name)}.#{name}"   end
-    def next_bindable()  self end
     def unbound?()       true end
-    def inspect()       "#<#{full_name}>" end
+    def inspect()       "<#{full_name}>" end
   end
 
   class InputBranchPort < BranchPort
-    def unbound?() @source.blank? end
+    def next_input() self           end
+    def unbound?()   @source.blank? end
     def listen_to(output_port)
-      output_branchport = output_port.next_bindable
+      output_branchport = output_port.next_output
       return [self,@source] if @source == output_branchport
       raise RuntimeError, "This input port is already bound to #{@source.full_name}. (attempting #{output_branchport.full_name})" if @source
       @source = output_branchport
@@ -56,10 +58,11 @@ module Nodus
   end
 
   class OutputBranchPort < BranchPort
+    def next_output() self                end
     def unbound?()    subscribers.blank?  end
     def subscribers() @subscribers ||= [] end
     def add_subscriber(input_port)
-      input_branchport = input_port.next_bindable
+      input_branchport = input_port.next_input
       return [input_branchport, self] if subscribers.include?(input_branchport)
       subscribers << input_branchport
       input_branchport.listen_to(self)
@@ -76,33 +79,32 @@ module Nodus
     def kind()             :undefined end
     def build_branch(name) BranchPort.new(self, name) end
     def full_name()       "#{@parent.try(:name)}.#{kind}.#{name}" end
+    def inspect()         "<#{full_name}>" end
 
     def method_missing(m,*args,&block)
       return @branches.send(m, *args, &block) if @branches.respond_to?(m)
       super
     end
-
-    def next_bindable()
-      # Default to first branch if none seem available.
-      # It's the branch's job to actually allow a binding to occur or not etc.
-      #
-      # This is perhaps too much logic. It might be better to assume ":main" branch if no branch specifier is given,
-      # instead of checking all the branches.
-      #
-      branches.select{|name, branch| branch.unbound?}[0] || branches[0]
-    end
   end
 
   class InputStreamPort < StreamPort
-    def kind() :inputs end
-    def build_branch(name) InputBranchPort.new(self, name) end
-    def listen_to(other_port) next_bindable.listen_to(other_port) end
+    def kind()                :inputs                           end
+    def build_branch(name)    InputBranchPort.new(self, name)   end
+    def listen_to(other_port) next_input.listen_to(other_port)  end
+    def next_input()          (branches.find{|nm,br| br.unbound?}.try(:[],1) || branches[0]).next_input end
   end
 
   class OutputStreamPort < StreamPort
-    def kind() :outputs end
-    def build_branch(name) OutputBranchPort.new(self, name) end
-    def add_subscriber(peer_input_port) next_bindable.add_subscriber(peer_input_port) end
+    def kind()                :outputs end
+    def build_branch(name)    OutputBranchPort.new(self, name)  end
+    def add_subscriber(sub)   next_output.add_subscriber(sub) end
+
+    # Default to first branch if none seem available.
+    # It's the branch's job to actually allow a binding to occur or not etc.
+    #
+    # This is perhaps too much logic. It might be better to assume ":main" branch if no branch specifier is given,
+    # instead of checking all the branches.
+    def next_output() (branches.find{|nm,br| br.unbound?}.try(:[],1) || branches[0]).next_output end
   end
 
   class Node
@@ -131,5 +133,18 @@ module Nodus
     def initialize(name=nil)
       @name = name || self.class.name
     end
+
+    def next_input
+      error(AmbiguousBinding, inputs) if inputs.size > 1
+      inputs[0].next_input
+    end
+
+    def next_output
+      error(AmbiguousBinding, outputs) if outputs.size > 1
+      outputs[0].next_output
+    end
+
+    def listen_to     (other_port) next_input.listen_to      (other_port) end
+    def add_subscriber(other_port) next_output.add_subscriber(other_port) end
   end
 end
