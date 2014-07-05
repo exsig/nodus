@@ -39,10 +39,13 @@ module Nodus
     end
 
     def full_name()     "#{@stream_port.try(:full_name)}:#{name}"   end
-    def next_bindable() self end
-    def unbound?()      @source.blank? && subscribers.blank?  end
-    def subscribers()   @subscribers ||= []              end
+    def next_bindable()  self end
+    def unbound?()       true end
+    def inspect()       "#<#{full_name}>" end
+  end
 
+  class InputBranchPort < BranchPort
+    def unbound?() @source.blank? end
     def listen_to(output_port)
       output_branchport = output_port.next_bindable
       return [self,@source] if @source == output_branchport
@@ -50,16 +53,16 @@ module Nodus
       @source = output_branchport
       output_branchport.add_subscriber(self)
     end
+  end
 
+  class OutputBranchPort < BranchPort
+    def unbound?()    subscribers.blank?  end
+    def subscribers() @subscribers ||= [] end
     def add_subscriber(input_port)
       input_branchport = input_port.next_bindable
       return [input_branchport, self] if subscribers.include?(input_branchport)
       subscribers << input_branchport
       input_branchport.listen_to(self)
-    end
-
-    def inspect
-      "#<#{full_name}>"
     end
   end
 
@@ -67,7 +70,11 @@ module Nodus
     attr_reader :name, :branches
     def initialize(parent_node, name, branches=[:main])
       @parent, @name = parent_node, name
-      @branches = FlexHash[branches.try(:map){|b| [b, BranchPort.new(self, b)]}]
+      @branches = FlexHash[branches.try(:map){|b| [b, build_branch(b)]}]
+    end
+
+    def build_branch(name)
+      BranchPort.new(self, name)
     end
 
     def method_missing(m,*args,&block)
@@ -79,14 +86,18 @@ module Nodus
     def next_bindable() branches.select{|name, branch| branch.unbound?}[0] end
   end
 
-  class InputPort < StreamPort
+  class InputStreamPort < StreamPort
+    def build_branch(name) InputBranchPort.new(self, name) end
+
     def listen_to(other_port)
       raise RuntimeError, "All branches for port #{name} are already bound." unless next_bindable
       next_bindable.listen_to(other_port)
     end
   end
 
-  class OutputPort < StreamPort
+  class OutputStreamPort < StreamPort
+    def build_branch(name) OutputBranchPort.new(self, name) end
+
     def add_subscriber(peer_input_port)
       next_bindable.add_subscriber(peer_input_port)
     end
@@ -113,12 +124,12 @@ module Nodus
     end
 
     # For defining instance-level inputs/outputs
-    protected def input (*names) inputs.concat (names.flat_map{|n|  InputPort.new(self,n)}) end
-    protected def output(*names) outputs.concat(names.flat_map{|n| OutputPort.new(self,n)}) end
+    protected def input (*names) inputs.concat (names.flat_map{|n|  InputStreamPort.new(self,n)}) end
+    protected def output(*names) outputs.concat(names.flat_map{|n| OutputStreamPort.new(self,n)}) end
 
     # Instance inputs/outputs (initialized with a copy of the class-defined ones)
-    def inputs () @inputs  ||= FlexArray.new(self.class.c_inputs .map{|n|  InputPort.new(self, n)}) end
-    def outputs() @outputs ||= FlexArray.new(self.class.c_outputs.map{|n| OutputPort.new(self, n)}) end
+    def inputs () @inputs  ||= FlexArray.new(self.class.c_inputs .map{|n|  InputStreamPort.new(self, n)}) end
+    def outputs() @outputs ||= FlexArray.new(self.class.c_outputs.map{|n| OutputStreamPort.new(self, n)}) end
 
     def initialize(name=nil)
       @name = name || self.class.name

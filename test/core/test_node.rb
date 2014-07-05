@@ -174,7 +174,14 @@ describe 'Node ports' do
   end
 
   it 'can be bound together' do
-    pp @a.inputs.a_input.listen_to(@b.outputs.b_output)
+    a,b = @a.inputs.a_input.listen_to(@b.outputs.b_output)
+    a.must_be_kind_of InputBranchPort
+    b.must_be_kind_of OutputBranchPort
+    a.wont_equal      b
+  end
+
+  it 'will not allow an input to be bound to more than one' do
+    binding1 = @a.inputs.a_input.listen_to(@b.outputs.b_output)
   end
 
 end
