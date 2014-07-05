@@ -75,9 +75,13 @@ class FlexHash
       end
       modifiable[new_flexhash_member(mname)] = args[0]
     elsif len == 0
-      @table[mid] || @table.send(mid, *args, &block)
+      res = @table[mid] || @table.send(mid, *args, &block)
+      res = FlexHash.new(res) if res.instance_of? Hash
+      res
     else
-      @table.send(mid, *args, &block)
+      res = @table.send(mid, *args, &block)
+      res = FlexHash.new(res) if res.instance_of? Hash
+      res
     end
   end
 

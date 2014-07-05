@@ -3,14 +3,14 @@ include Nodus
 
 describe Nodus::StreamPort do
   it 'can be created with just a name' do
-    StreamPort.new(:the_stream).must_be_instance_of StreamPort
+    StreamPort.new(nil, :the_stream).must_be_instance_of StreamPort
   end
 
   it 'has a main branch by default' do
-    StreamPort.new(:str).main.must_be_kind_of   BranchPort
-    StreamPort.new(:str)[:main].must_be_kind_of BranchPort
-    StreamPort.new(:str)[0].must_be_kind_of     BranchPort
-    StreamPort.new(:str)[1].must_equal          nil
+    StreamPort.new(nil, :str).main.must_be_kind_of   BranchPort
+    StreamPort.new(nil, :str)[:main].must_be_kind_of BranchPort
+    StreamPort.new(nil, :str)[0].must_be_kind_of     BranchPort
+    StreamPort.new(nil, :str)[1].must_equal          nil
   end
 end
 
@@ -148,3 +148,33 @@ describe Nodus::Node do
   end
 end
 
+describe 'Node ports' do
+  before do
+    class NodeA < Node
+      input  :a_input
+      output :a_output
+    end
+
+    class NodeB < Node
+      def initialize(*)
+        super
+        input  :b_input
+        output :b_output
+      end
+    end
+
+    @a = NodeA[:the_a]
+    @b = NodeB[:the_b]
+  end
+
+  after do
+    @a = @b = nil
+    remove_class :NodeA
+    remove_class :NodeB
+  end
+
+  it 'can be bound together' do
+    pp @a.inputs.a_input.listen_to(@b.outputs.b_output)
+  end
+
+end
