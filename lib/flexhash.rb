@@ -85,7 +85,11 @@ class FlexHash
     if Integer === name
       @table[name] || @table[@table.keys[name]]
     else
-      @table[name] || @table[name.to_s] || @table[name.to_sym]
+      res = @table[name] || @table[name.try(:to_sym)]
+      return res if res
+      res = @table.select{|k,v| name === k}
+      return res.values[0] if res.size == 1
+      res
     end
   end
 
@@ -144,5 +148,22 @@ class FlexHash
 
   def hash
     @table.hash
+  end
+end
+
+# Kind of like FlexHash, but assumes the elements of the array have a :name method, and allows duplicates
+class FlexArray < Array
+  def [](position_or_name)
+    return super if Fixnum === position_or_name
+    res = self.find_all{|stream_port| position_or_name === stream_port.name}
+    res = res[0] if res.size == 1
+    res
+  end
+
+  def method_missing(mid, *args, &block)
+    mname = mid.id2name
+    len = args.length
+    return self[mid] if len == 0
+    super
   end
 end

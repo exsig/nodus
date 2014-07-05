@@ -51,24 +51,14 @@ module Nodus
     end
   end
 
-  class StreamPortGroup < Array
-    def [](position_or_name)
-      return super if Fixnum === position_or_name
-      res = self.find_all{|stream_port| position_or_name === stream_port.name}
-      res = res[0] if res.size == 1
-      res
-    end
-  end
-
-
   class Node
     def self.input    (*names) c_inputs .concat(names.flat_map{|n| StreamPort.new(n)}) end
     def self.output   (*names) c_outputs.concat(names.flat_map{|n| StreamPort.new(n)}) end
     def      input    (*names) inputs   .concat(names.flat_map{|n| StreamPort.new(n)}) end
     def      output   (*names) outputs  .concat(names.flat_map{|n| StreamPort.new(n)}) end
 
-    def self.c_inputs () @c_inputs  ||= StreamPortGroup.new end
-    def self.c_outputs() @c_outputs ||= StreamPortGroup.new end
+    def self.c_inputs () @c_inputs  ||= FlexArray.new end
+    def self.c_outputs() @c_outputs ||= FlexArray.new end
     def      inputs   () @inputs    ||= Marshal.load(Marshal.dump(self.class.c_inputs))  end
     def      outputs  () @outputs   ||= Marshal.load(Marshal.dump(self.class.c_outputs)) end
 
