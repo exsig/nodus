@@ -23,10 +23,23 @@ describe Nodus::Node do
     class ExampleNode < Node
       input  :x
       input  :y
-      input  :z, "The ~z~"
+      input  :z
       output :h
       output :i
-      output :j, "The ~j~"
+      output :j
+    end
+
+    s = ExampleNode.new
+    s.inputs.size.must_equal        3
+    s.outputs.size.must_equal       3
+    s.inputs.first.name.must_equal  :x
+    s.outputs.first.name.must_equal :h
+  end
+
+  it 'allows class-level stream-ports to be multi-defined' do
+    class ExampleNode < Node
+      input  :x, :y, :z
+      output :h, :i, :j
     end
 
     s = ExampleNode.new
@@ -80,6 +93,12 @@ describe Nodus::Node do
     s.outputs.map{|i| i.name }.sort.must_equal [:b, :x, :x, :x]
   end
 
+  it 'allows looking up ports by name' do
+    class ExampleNode < Node
+
+    end
+  end
+
 
   it 'gets created with the class brackets' do
     Node[].must_be_kind_of Node
@@ -104,8 +123,28 @@ describe Nodus::Node do
 
   it 'allows queries against inputs and outputs' do
     class ExampleNode < Node
-
+      input :the_input, :a
+      output :and_the_output, :b
     end
+
+    s = ExampleNode.new
+    s.inputs[:the_input].must_be_kind_of StreamPort
+    s.outputs[/output/].name.must_equal :and_the_output
+  end
+
+  it 'groups matching ports into an array' do
+    class ExampleNode < Node
+      input :a, :a, :b
+    end
+
+    s = ExampleNode.new
+    i = s.inputs[:a]
+    i.must_be_kind_of Array
+    i.size.must_equal 2
+    i[0].must_be_kind_of StreamPort
+    i[0].name.must_equal :a
+    i[1].must_be_kind_of StreamPort
+    i[1].name.must_equal :a
   end
 end
 
