@@ -36,13 +36,10 @@ module Nodus
 
   class BranchPort
     attr_reader :name
-    def initialize(parent_stream_port, name)
-      @stream_port, @name = parent_stream_port, name
-    end
-
-    def full_name()     "#{@stream_port.try(:full_name)}.#{name}"   end
-    def unbound?()       true end
-    def inspect()       "<#{full_name}>" end
+    def initialize(parent_sp, name) @stream_port, @name = parent_sp, name     end
+    def full_name()                 "#{@stream_port.try(:full_name)}.#{name}" end
+    def unbound?()                  true                                      end
+    def inspect()                   "<#{full_name}>"                          end
   end
 
   class InputBranchPort < BranchPort
@@ -73,13 +70,13 @@ module Nodus
     attr_reader :name, :branches
     def initialize(parent_node, name, branches=[:main])
       @parent, @name = parent_node, name
-      @branches = FlexHash[branches.try(:map){|b| [b, build_branch(b)]}]
+      @branches      = FlexHash[branches.try(:map){|b| [b, build_branch(b)]}]
     end
 
-    def kind()             :undefined end
-    def build_branch(name) BranchPort.new(self, name) end
-    def full_name()       "#{@parent.try(:name)}.#{kind}.#{name}" end
-    def inspect()         "<#{full_name}>" end
+    def kind()                :undefined                       end
+    def build_branch(name)    BranchPort.new(self, name)       end
+    def full_name()           "#{@parent.try(:name)}.#{kind}.#{name}" end
+    def inspect()             "<#{full_name}>"                 end
 
     def method_missing(m,*args,&block)
       return @branches.send(m, *args, &block) if @branches.respond_to?(m)
@@ -95,9 +92,9 @@ module Nodus
   end
 
   class OutputStreamPort < StreamPort
-    def kind()                :outputs end
+    def kind()                :outputs                          end
     def build_branch(name)    OutputBranchPort.new(self, name)  end
-    def add_subscriber(sub)   next_output.add_subscriber(sub) end
+    def add_subscriber(sub)   next_output.add_subscriber(sub)   end
 
     # Default to first branch if none seem available.
     # It's the branch's job to actually allow a binding to occur or not etc.
