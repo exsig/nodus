@@ -1,4 +1,5 @@
 require 'extensions'
+require 'flexhash'
 
 module Nodus
   SRCDIR  = File.dirname(__FILE__)
@@ -26,3 +27,5 @@ def error(klass, *args)
   msg ||= args.shift
   raise klass, sprintf(*([msg] + args))
 end
+
+require 'nodus/node'
