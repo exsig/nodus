@@ -51,6 +51,14 @@ module Nodus
     end
   end
 
+  # TODO: YOU ARE HERE- starting to bind ports together etc. (and then compositions...)
+  class InputPort < StreamPort
+    def bind(peer_output_port) # TODO: idea- or allow binding straight to enumerable here (and then do all the stream creation etc.)
+      raise ArgumentError, "This input port is already bound to #{@source.try(:name)}:#{@source.name}. (#{peer_output_port.name})" if @source
+      @source = peer_output_port
+    end
+  end
+
   class Node
     def self.input    (*names) c_inputs .concat(names.flat_map{|n| StreamPort.new(n)}) end
     def self.output   (*names) c_outputs.concat(names.flat_map{|n| StreamPort.new(n)}) end
@@ -64,7 +72,9 @@ module Nodus
 
     def self.[](*args) new(*args) end
 
-
+    def initialize(name=nil)
+      @name = name || self.class.name
+    end
 
   end
 end
