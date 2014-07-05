@@ -153,9 +153,10 @@ end
 
 # Kind of like FlexHash, but assumes the elements of the array have a :name method, and allows duplicates
 class FlexArray < Array
-  def [](position_or_name)
-    return super if Fixnum === position_or_name
-    res = self.find_all{|stream_port| position_or_name === stream_port.name}
+  def [](k)
+    return super if Fixnum === k
+    res = self.find_all{|element| k === element.name || k.to_s === element.name.to_s}
+    return nil if res.blank?
     res = res[0] if res.size == 1
     res
   end
@@ -163,7 +164,8 @@ class FlexArray < Array
   def method_missing(mid, *args, &block)
     mname = mid.id2name
     len = args.length
-    return self[mid] if len == 0
+    res = self[mid]
+    return res unless res.blank?
     super
   end
 end

@@ -1,4 +1,5 @@
 require_relative '../helper.rb'
+require 'ostruct'
 
 describe FlexHash do
   it 'can be initialized like a hash' do
@@ -66,4 +67,22 @@ describe FlexHash do
     subject.shift.must_equal [:a, 100]
   end
 
+end
+
+describe FlexArray do
+  it 'seems to work' do
+    a = FlexArray.new
+    a << OpenStruct.new(name: 'howdy')
+    a[1] = OpenStruct.new(name: :duty)
+    a << OpenStruct.new(name: 123)
+
+    a[0].name.must_equal       'howdy'
+    a['howdy'].name.must_equal 'howdy'
+    pp a.howdy
+    a.howdy.name.must_equal    'howdy'
+    a[/d/].map{|os| os.name.to_s}.sort.must_equal ['duty', 'howdy']
+    a[2].must_be_kind_of OpenStruct
+  end
+
+  # TODO: test for real
 end
