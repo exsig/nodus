@@ -38,7 +38,7 @@ module Nodus
       @stream_port, @name = parent_stream_port, name
     end
 
-    def full_name()     "#{@stream_port.try(:full_name)}:#{name}"   end
+    def full_name()     "#{@stream_port.try(:full_name)}.#{name}"   end
     def next_bindable()  self end
     def unbound?()       true end
     def inspect()       "#<#{full_name}>" end
@@ -73,8 +73,9 @@ module Nodus
       @branches = FlexHash[branches.try(:map){|b| [b, build_branch(b)]}]
     end
 
-    def build_branch(name) BranchPort.new(self, name)     end
-    def full_name()       "#{@parent.try(:name)}:#{name}" end
+    def kind()             :undefined end
+    def build_branch(name) BranchPort.new(self, name) end
+    def full_name()       "#{@parent.try(:name)}.#{kind}.#{name}" end
 
     def method_missing(m,*args,&block)
       return @branches.send(m, *args, &block) if @branches.respond_to?(m)
@@ -84,16 +85,22 @@ module Nodus
     def next_bindable()
       # Default to first branch if none seem available.
       # It's the branch's job to actually allow a binding to occur or not etc.
+      #
+      # This is perhaps too much logic. It might be better to assume ":main" branch if no branch specifier is given,
+      # instead of checking all the branches.
+      #
       branches.select{|name, branch| branch.unbound?}[0] || branches[0]
     end
   end
 
   class InputStreamPort < StreamPort
+    def kind() :inputs end
     def build_branch(name) InputBranchPort.new(self, name) end
     def listen_to(other_port) next_bindable.listen_to(other_port) end
   end
 
   class OutputStreamPort < StreamPort
+    def kind() :outputs end
     def build_branch(name) OutputBranchPort.new(self, name) end
     def add_subscriber(peer_input_port) next_bindable.add_subscriber(peer_input_port) end
   end

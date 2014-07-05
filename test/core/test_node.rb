@@ -174,8 +174,29 @@ describe 'Node ports' do
     remove_class :NodeB
   end
 
-  it 'can be bound together' do
+  it 'can be accessed easily to any depth' do
+    @a.inputs.a_input.must_be_kind_of         InputStreamPort
+    @a.inputs.a_input.main.must_be_kind_of    InputBranchPort
+    @b.outputs.b_output.must_be_kind_of       OutputStreamPort
+    @b.outputs.b_output2.main.must_be_kind_of OutputBranchPort
+  end
+
+  it 'gives good full names' do
+    @a.inputs.a_input.full_name.must_equal         'the_a.inputs.a_input'
+    @a.inputs.a_input.main.full_name.must_equal    'the_a.inputs.a_input.main'
+    @b.outputs.b_output.full_name.must_equal       'the_b.outputs.b_output'
+    @b.outputs.b_output2.main.full_name.must_equal 'the_b.outputs.b_output2.main'
+  end
+
+  it 'can be bound together from input perspective' do
     a,b = @a.inputs.a_input.listen_to(@b.outputs.b_output)
+    a.must_be_kind_of InputBranchPort
+    b.must_be_kind_of OutputBranchPort
+    a.wont_equal      b
+  end
+
+  it 'can be bound together from output perspective' do
+    a,b = @b.outputs.b_output.add_subscriber(@a.inputs.a_input)
     a.must_be_kind_of InputBranchPort
     b.must_be_kind_of OutputBranchPort
     a.wont_equal      b
@@ -186,10 +207,27 @@ describe 'Node ports' do
     ->{@a.inputs.a_input.listen_to(@b.outputs.b_output2)}.must_raise RuntimeError
   end
 
+  it 'will not allow an input to be bound to more than one (output perspective)' do
+    binding1 = @b.outputs.b_output.add_subscriber(@a.inputs.a_input)
+    ->{@a.inputs.a_input.listen_to(@b.outputs.b_output2)}.must_raise RuntimeError
+    ->{@b.outputs.b_output2.add_subscriber(@a.inputs.a_input)}.must_raise RuntimeError
+  end
+
+
   it 'ignores duplicate binding actions' do
     binding1 = @a.inputs.a_input.listen_to(@b.outputs.b_output)
     binding2 = @a.inputs.a_input.listen_to(@b.outputs.b_output)
     binding1.must_equal binding2
   end
 
+  it 'ignores duplicate binding actions (output perspective)' do
+    binding1 = @b.outputs.b_output.add_subscriber(@a.inputs.a_input)
+    binding2 = @b.outputs.b_output.add_subscriber(@a.inputs.a_input)
+    binding1.must_equal binding2
+    @b.outputs.b_output.main.subscribers.size.must_equal 1
+  end
+
+
+  # TODO: don't know if it should check for cycles when the objects are bound or at some point later when they are run
+  #       instead...
 end
