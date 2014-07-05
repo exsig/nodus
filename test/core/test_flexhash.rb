@@ -78,7 +78,6 @@ describe FlexArray do
 
     a[0].name.must_equal       'howdy'
     a['howdy'].name.must_equal 'howdy'
-    pp a.howdy
     a.howdy.name.must_equal    'howdy'
     a[/d/].map{|os| os.name.to_s}.sort.must_equal ['duty', 'howdy']
     a[2].must_be_kind_of OpenStruct
