@@ -49,7 +49,7 @@ module Nodus
     def listen_to(output_port)
       output_branchport = output_port.next_bindable
       return [self,@source] if @source == output_branchport
-      raise ArgumentError, "This input port is already bound to #{@source.full_name}. (attempting #{output_branchport.full_name})" if @source
+      raise RuntimeError, "This input port is already bound to #{@source.full_name}. (attempting #{output_branchport.full_name})" if @source
       @source = output_branchport
       output_branchport.add_subscriber(self)
     end
@@ -73,39 +73,29 @@ module Nodus
       @branches = FlexHash[branches.try(:map){|b| [b, build_branch(b)]}]
     end
 
-    def build_branch(name)
-      BranchPort.new(self, name)
-    end
+    def build_branch(name) BranchPort.new(self, name)     end
+    def full_name()       "#{@parent.try(:name)}:#{name}" end
 
     def method_missing(m,*args,&block)
       return @branches.send(m, *args, &block) if @branches.respond_to?(m)
       super
     end
 
-    def full_name()     "#{@parent.try(:name)}:#{name}" end
-    def next_bindable() branches.select{|name, branch| branch.unbound?}[0] end
+    def next_bindable()
+      # Default to first branch if none seem available.
+      # It's the branch's job to actually allow a binding to occur or not etc.
+      branches.select{|name, branch| branch.unbound?}[0] || branches[0]
+    end
   end
 
   class InputStreamPort < StreamPort
     def build_branch(name) InputBranchPort.new(self, name) end
-
-    def listen_to(other_port)
-      raise RuntimeError, "All branches for port #{name} are already bound." unless next_bindable
-      next_bindable.listen_to(other_port)
-    end
+    def listen_to(other_port) next_bindable.listen_to(other_port) end
   end
 
   class OutputStreamPort < StreamPort
     def build_branch(name) OutputBranchPort.new(self, name) end
-
-    def add_subscriber(peer_input_port)
-      next_bindable.add_subscriber(peer_input_port)
-    end
-
-    def next_bindable()
-      candidate   = super
-      candidate ||= branches[0] # default to more listeners on only first branch if all are listened to
-    end
+    def add_subscriber(peer_input_port) next_bindable.add_subscriber(peer_input_port) end
   end
 
   class Node

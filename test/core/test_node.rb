@@ -160,6 +160,7 @@ describe 'Node ports' do
         super
         input  :b_input
         output :b_output
+        output :b_output2
       end
     end
 
@@ -182,6 +183,13 @@ describe 'Node ports' do
 
   it 'will not allow an input to be bound to more than one' do
     binding1 = @a.inputs.a_input.listen_to(@b.outputs.b_output)
+    ->{@a.inputs.a_input.listen_to(@b.outputs.b_output2)}.must_raise RuntimeError
+  end
+
+  it 'ignores duplicate binding actions' do
+    binding1 = @a.inputs.a_input.listen_to(@b.outputs.b_output)
+    binding2 = @a.inputs.a_input.listen_to(@b.outputs.b_output)
+    binding1.must_equal binding2
   end
 
 end
