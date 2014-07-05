@@ -1,13 +1,6 @@
 
 
 
-# - [ ] Input-duals
-# - [ ] Output-duals
-# - [ ] static composition
-# - [ ] dynamic composition
-
-# - [ ] simple generators
-
 module Nodus
   class Node
     def self.input    (name, desc=nil) c_inputs  << OpenStruct.new(name: name, desc: desc) end
@@ -22,9 +15,6 @@ module Nodus
   end
 
 
-  # - [ ] sequence state startup for tokens
-  # - [ ] automatic (or manual) token creation
-  # - [ ] automatic session creation (for now)
   class Generator < Node
 
   end

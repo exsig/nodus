@@ -1,26 +1,12 @@
 require_relative '../helper.rb'
 include Nodus
 
-#
-# - inputs with the same name as outputs means every token received causes token of the same stream to be emitted. (how
-#   to implement wait? especially with some branches marked non-applicable for a token?)
-# - nodes can choose whether or not they propagate an error
-#
-# - input(s) / bound-to
-# - output(s) / bound-to
-#
-#
-# - [ ] pipe (including pipe w/ one element)
-#
-
-
-
 describe Nodus::Node do
   after do
     remove_class :ExampleNode
   end
 
-  it 'allows class-level ports to be defined' do
+  it 'allows class-level stream-ports to be defined' do
     class ExampleNode < Node
       input  :x
       input  :y
@@ -37,7 +23,7 @@ describe Nodus::Node do
     s.outputs.first.name.must_equal :h
   end
 
-  it 'merges class and instance-level ports' do
+  it 'merges class and instance-level stream-ports' do
     class ExampleNode < Node
       input  :x
       output :y
@@ -57,7 +43,7 @@ describe Nodus::Node do
     s.outputs.map{|i| i.name }.sort.must_equal [:n, :y]
   end
 
-  it 'allows duplicate port names' do
+  it 'allows and tracks duplicate port names' do
     class ExampleNode < Node
       input  :a
       input  :x
