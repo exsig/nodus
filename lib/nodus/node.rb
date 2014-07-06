@@ -40,6 +40,8 @@ module Nodus
     def full_name()                 "#{@stream_port.try(:full_name)}.#{name}" end
     def unbound?()                  true                                      end
     def inspect()                   "<#{full_name}>"                          end
+    def parent_stream()             @stream_port                              end
+    def parent_node()               @stream_port.try(:parent)                 end
   end
 
   class InputBranchPort < BranchPort
@@ -67,7 +69,7 @@ module Nodus
   end
 
   class StreamPort
-    attr_reader :name, :branches
+    attr_reader :name, :branches, :parent
     def initialize(parent_node, name, branches=[:main])
       @parent, @name = parent_node, name
       @branches      = FlexHash[branches.try(:map){|b| [b, build_branch(b)]}]
@@ -81,6 +83,10 @@ module Nodus
     def method_missing(m,*args,&block)
       return @branches.send(m, *args, &block) if @branches.respond_to?(m)
       super
+    end
+
+    def unbound?
+      branches.all?{|nm,br| br.unbound?}
     end
   end
 
@@ -145,3 +151,6 @@ module Nodus
     def add_subscriber(other_port) next_output.add_subscriber(other_port) end
   end
 end
+
+require 'nodus/compositions'
+require 'nodus/render'
