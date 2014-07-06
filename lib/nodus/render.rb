@@ -1,6 +1,12 @@
 require 'securerandom'
 
 module Nodus
+  class GraphContext
+    def initialize(name='Nodus process network')
+      @name = name
+    end
+  end
+
   class Node
     def style(k,v)
       style_attrs[k] = v
@@ -30,7 +36,7 @@ module Nodus
           dests = [dest]
         else
           dest_nodes = o.branches.flat_map{|nm,br| br.subscribers.map{|s| s.parent_node}}
-          dest_nodes.each{|n| out << n.to_dot(1) }
+          #dest_nodes.each{|n| out << n.to_dot(1) }
           dests = dest_nodes.map{|n| n.dot_name}
         end
         dests.each{|d| out << "#{dot_name} -> #{d} [label=\"#{o.name}\"];"}
