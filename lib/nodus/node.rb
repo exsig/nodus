@@ -118,6 +118,3 @@ module Nodus
     def add_subscriber(other_port) next_output.add_subscriber(other_port) end
   end
 end
-
-require 'nodus/compositions'
-require 'nodus/render'
