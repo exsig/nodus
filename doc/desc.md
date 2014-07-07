@@ -1,8 +1,3 @@
-
-
-
-
-
 Composition Rules
 -----------------
 
@@ -28,11 +23,11 @@ If a class handler, it will probably want to implement one or more of:
 
 #### Port types:
 
-`parameter: (optional<[default]> | required)`
+`parameter: (optional[<default>] | required)`
 
-`| input: (operational<output-port> | consumed [control]) x (optional | required)`
+`| input: (operational<output-port[s]> | consumed [control]) x (optional | required)`
 
-`| output: (operational<input-port> | generated [control]) x (primary | tap)`
+`| output: (operational<input-port[s]> | generated [control]) x (primary | tap)`
 
 
 ##### Parameters
@@ -43,14 +38,14 @@ If a class handler, it will probably want to implement one or more of:
     ports because they must be set before any real data comes through the node.
 
 ##### Inputs
-  - **operational**(out-port): port has paired output port that is stream-synchronized with this input.
+  - **operational**(out-port[s]): port has paired output port that is stream-synchronized with this input.
   - **control**: specialized (and implied) end-point used to help node make decisions. e.g., state / out-of-band messages
   - **consumed**: End-point / Sink. Node reads input but doesn't have corresponding synchronized output.
   - **optional**: Node can run without this being connected to anything (although not sure if they can connect at some
     later point in time...)
 
 ##### Outputs
-  - **operational**(in-port): port has paired input port and this output adds to (or passes through) those input tokens.
+  - **operational**(in-port[s]): port has paired input port and this output adds to (or passes through) those input tokens.
   - **controller**: Specialized (and implied) generated port used to help other nodes make decisions. Also state & out of band messages.
   - **generated**: Origin / Generator. Node generates stream / it has no corresponding input port.
   - **tap-point**: Output port that can optionally be tapped into (usually meaning it already has a listener within the node).
@@ -161,3 +156,35 @@ Lifecycle
 
 
 Compose Classes or Instances (or both)??
+
+
+Phases
+1. Kernel-design time:
+   - designate input/output ports/streams
+2. Design-time:
+   - specify bindings as much as possible
+   - compose
+   - pre-initialize/parameterize as appropriate
+   - specify process network / highest level compositions
+3. Pre-runtime:
+   - static compliance-check
+   - display process network graph
+   - warnings / errors as appropriate
+4. Runtime:
+   - dynamic parameterization as appropriate
+   - dynamic running nodes as appropriate
+   - contexts and real stream instances
+
+
+Specialized (out of band) input/output ports
+  - new output available
+  - new input available (?)
+  - output subscribed by...
+  - input bound by...
+
+  (allows nodes to communicate in an out-of-band fassion... easier to simply specify the peer object in initialize and
+  make sure every node has a general out-of-band communication channel where senders say who they are?)
+
+* Inputs can be bound to only one output
+* Outputs can be subscribed to by any number of other nodes
+* Binding to a node itself assumes the correct input/output if only one of either is available
