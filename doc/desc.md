@@ -16,39 +16,52 @@ Most composition nodes are given a `NodeList`, which consists of either:
     range specifier?)
   * (with port-specifiers for individual nodes if necessary)
 
-- Data Handler
-- Upstream Exception Handler
-- Downstream Exception Handler ?
-- OOB Message Handler (such as N/A)
+Most accept one or more kernels (== `lambda`, `proc`, `block`, or misc. `class` constant with specific handlers/behavior)
+
+If a class handler, it will probably want to implement one or more of:
+  - Data Handler
+  - Upstream Exception Handler
+  - Downstream Exception Handler ?
+  - OOB Message Handler (such as N/A)
 
 ### Core Custom Node
 
 #### Port types:
 
-##### Inputs
+`parameter: (optional<[default]> | required)`
+
+`| input: (operational<output-port> | consumed [control]) x (optional | required)`
+
+`| output: (operational<input-port> | generated [control]) x (primary | tap)`
+
+
+##### Parameters
   - **parameter**(default=nil): w/ optional default... specialized optional or required input port (probably not
     implemented as actual message channel). Also possibly enforce the fact that it can't be connected to a stream.
     Possibly composable / or able to be overridden kind of in parallel to other compositions. **optional** or
-    **required**. *These are also outputs. i.e., they are readable.*
+    **required**. *These are also outputs. i.e., they are readable.* In fact they are intrinsicly different than normal
+    ports because they must be set before any real data comes through the node.
+
+##### Inputs
   - **operational**(out-port): port has paired output port that is stream-synchronized with this input.
-  - **control**: specialized end-point used to help node make decisions. e.g., state / out-of-band messages
-  - **end-point**: Consumed / Sink. Node reads input but doesn't have corresponding synchronized output.
+  - **control**: specialized (and implied) end-point used to help node make decisions. e.g., state / out-of-band messages
+  - **consumed**: End-point / Sink. Node reads input but doesn't have corresponding synchronized output.
+  - **optional**: Node can run without this being connected to anything (although not sure if they can connect at some
+    later point in time...)
 
 ##### Outputs
   - **operational**(in-port): port has paired input port and this output adds to (or passes through) those input tokens.
+  - **controller**: Specialized (and implied) generated port used to help other nodes make decisions. Also state & out of band messages.
+  - **generated**: Origin / Generator. Node generates stream / it has no corresponding input port.
   - **tap-point**: Output port that can optionally be tapped into (usually meaning it already has a listener within the node).
-  - **controller**: ??? not sure if it's a worthwhile distinction- but outputs that are meant to be read as control
-    inputs. *Implies also generated*?
-  - **generated**: Origins. Node generates stream / it has no corresponding input port.
 
-#### Helpers
+
+#### Helpers / Quick Builders
 
  - **Simple Generator**
  - **Simple Processor**
  - **Simple Consumer** = **Simple Fold**
  - **Simple Projection**
-
-Most accept one or more kernels (== `lambda`, `proc`, `block`, or misc. `class` constant with specific handlers/behavior)
 
 ### Axiomatic
 
@@ -60,6 +73,8 @@ Most accept one or more kernels (== `lambda`, `proc`, `block`, or misc. `class` 
   * *AdHoc*
   * Given an arbitrary list of nodes, allows specifying connection pairs between available inputs/outputs.
   * Result is a node with all remaining unconnected input and output ports
+  * Can also connect values to parameter inputs
+  * Essentially a curry function
 
 **Pipe:**
   * *AdHoc*
