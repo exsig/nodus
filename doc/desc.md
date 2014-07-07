@@ -23,13 +23,23 @@ Most composition nodes are given a `NodeList`, which consists of either:
 
 ### Core Custom Node
 
-(every node can be one or more of the following):
+#### Port types:
 
-- **Generator** - outputs to one or more streams not present as inputs
-- **Consumer**  - gets input from one or more streams not present as outputs
-- **Processor** - has at least one input stream that is present as an output stream as well
+##### Inputs
+  - **parameter**(default=nil): w/ optional default... specialized optional or required input port (probably not
+    implemented as actual message channel). Also possibly enforce the fact that it can't be connected to a stream.
+    Possibly composable / or able to be overridden kind of in parallel to other compositions. **optional** or
+    **required**. *These are also outputs. i.e., they are readable.*
+  - **operational**(out-port): port has paired output port that is stream-synchronized with this input.
+  - **control**: specialized end-point used to help node make decisions. e.g., state / out-of-band messages
+  - **end-point**: Consumed / Sink. Node reads input but doesn't have corresponding synchronized output.
 
-(not sure if that is a useful taxonomy...)
+##### Outputs
+  - **operational**(in-port): port has paired input port and this output adds to (or passes through) those input tokens.
+  - **tap-point**: Output port that can optionally be tapped into (usually meaning it already has a listener within the node).
+  - **controller**: ??? not sure if it's a worthwhile distinction- but outputs that are meant to be read as control
+    inputs. *Implies also generated*?
+  - **generated**: Origins. Node generates stream / it has no corresponding input port.
 
 #### Helpers
 
@@ -88,9 +98,32 @@ Most accept one or more kernels (== `lambda`, `proc`, `block`, or misc. `class` 
 ### Composites
 
 
-**DataMap** = Multiply + Concurrent(Filter or Select, View, Node) + Join
+**MultiMap**
+  * Multiply + Concurrent(Filter or Select, View, Node) + Join
 
+**Mux** (multiplex)
+  * *AdHoc* to *Stream-Synchronized*
+  * Multiple input streams
+  * Output token for each input token on _any_ input stream
 
+**Tap**
+  * *Stream-Synchronized*
+  * A Multiply, but defined differently so that it can be injected in another node (?) without changing that node's
+    functionality.
+  * Specify tap-point of other-node when constructing.
+
+**Runner**
+  * Usually automatically created
+  * Wraps a list of nodes into concurrent. Any inputs given stdin or integer sequences (?) and all outputs are
+    multiplexed to stdout.
+
+**StateSwitch**
+  * Has a state port and various output streams- state port helps it decide which filter/select branches are chosen
+    (allow either drop or nop?)
+
+**Split**
+  * Multiply + Concurrent(Filter or Select [with DROP], View, (optional Node))
+  * Like MultiMap except non-matching records are dropped- effectively creating unique streams
 
 As first token propagates, it's stream-id propagates with it. Nodes that are vertically stateful and therefore need to
 guarantee that the same stream is feeding them tokens at all time then use it for comparison.
