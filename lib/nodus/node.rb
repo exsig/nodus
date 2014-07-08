@@ -1,120 +1,117 @@
 module Nodus
-  def_exception :AmbiguousBinding, "Ambiguous binding; select a more specific stream/branch port: %s", ArgumentError
+  module Node
+    class Parameter
+      attr :name, :default
+      def initialize(name, opts={})
+        @name = name.to_sym
+        merge_opts(opts || {})
+      end
 
-  class BranchPort
-    attr_reader :name
-    def initialize(parent_sp, name) @stream_port, @name = parent_sp, name     end
-    def full_name()                 "#{@stream_port.try(:full_name)}.#{name}" end
-    def unbound?()                  true                                      end
-    def inspect()                   "<#{full_name}>"                          end
-    def parent_stream()             @stream_port                              end
-    def parent_node()               @stream_port.try(:parent)                 end
-  end
+      def merge_opts(opts={})
+        @default  =  opts.delete(:default)  if opts.has_key?(:default)
+        @required =  opts.delete(:required) if opts.has_key?(:required)
+        @required = !opts.delete(:optional) if opts.has_key?(:optional)
+        remove_instance_variable(:@default) if opts[:no_default]
+      end
 
-  class InputBranchPort < BranchPort
-    def next_input() self           end
-    def unbound?()   @source.blank? end
-    def listen_to(output_port)
-      output_branchport = output_port.next_output
-      return [self,@source] if @source == output_branchport
-      raise RuntimeError, "This input port is already bound to #{@source.full_name}. (attempting #{output_branchport.full_name})" if @source
-      @source = output_branchport
-      output_branchport.add_subscriber(self)
-    end
-  end
-
-  class OutputBranchPort < BranchPort
-    def next_output() self                end
-    def unbound?()    subscribers.blank?  end
-    def subscribers() @subscribers ||= [] end
-    def add_subscriber(input_port)
-      input_branchport = input_port.next_input
-      return [input_branchport, self] if subscribers.include?(input_branchport)
-      subscribers << input_branchport
-      input_branchport.listen_to(self)
-    end
-  end
-
-  class StreamPort
-    attr_reader :name, :branches, :parent
-    def initialize(parent_node, name, branches=[:main])
-      @parent, @name = parent_node, name
-      @branches      = FlexHash[branches.try(:map){|b| [b, build_branch(b)]}]
+      def required?() @required || false                    end
+      def optional?() !required?                            end
+      def default?()  instance_variable_defined?(:@default) end
+      def inspect()   "#<param #{name}#{required? ? '*' : ''}#{default? ? "=#{default}" : ''}>" end
     end
 
-    def kind()                :undefined                       end
-    def build_branch(name)    BranchPort.new(self, name)       end
-    def full_name()           "#{@parent.try(:name)}.#{kind}.#{name}" end
-    def inspect()             "<#{full_name}>"                 end
+    class ParameterList < Delegator
+      def initialize()  @data = {}; super(@data) end
+      def __getobj__()  @data                    end
+      def __setobj__(o) @data = o                end
+      def dup() Marshal.load(Marshal.dump(self)) end
+      def inspect()     @data.values.inspect     end
 
-    def method_missing(m,*args,&block)
-      return @branches.send(m, *args, &block) if @branches.respond_to?(m)
-      super
+      def <<(param_init_args)
+        if Array === param_init_args
+          name, opts = param_init_args
+          name = name.to_sym
+          if   @data[name] then @data[name].merge_opts(opts || {})
+          else @data[name] = Parameter.new(name, opts) end
+        elsif Parameter === param_init_args
+          if   @data[param_init_args.name] then raise ArgumentError, "Haven't yet implemented parameter merging"
+          else @data[param_init_args.name] = param_init_args.dup end
+        else raise ArgumentError, "Can't use #{param_init_args.inspect} for a new parameter" end
+      end
     end
 
-    def unbound?
-      branches.all?{|nm,br| br.unbound?}
+    class Base
+      class << self
+        def parameters()   @parameters ||= ParameterList.new end
+        def parameters=(p) @parameters   = p                 end
+        def param(*args)   parameters << args                end
+
+        # CLASS LEVEL CURRYING
+        def new_parameterized_class(newname, param_defs={})
+          current_parameters = parameters
+          klass = Class.new(self) do |mod|
+            # Propagate parent parameters
+            mod.parameters = current_parameters.dup
+
+            # Merge/append with new parameters
+            param_defs.each{|name, opts| mod.param(name, opts)}
+          end
+          Object.const_set(newname, klass)
+        end
+      end
+
+      def initialize(*params)
+        pp parameters
+        # fill params with non-hash heads of args and then use any remaining hash to fill in more params
+      end
+
+      def parameters
+        @parameters ||= self.class.parameters.dup
+      end
+
     end
-  end
-
-  class InputStreamPort < StreamPort
-    def kind()                :inputs                           end
-    def build_branch(name)    InputBranchPort.new(self, name)   end
-    def listen_to(other_port) next_input.listen_to(other_port)  end
-    def next_input()          (branches.find{|nm,br| br.unbound?}.try(:[],1) || branches[0]).next_input end
-  end
-
-  class OutputStreamPort < StreamPort
-    def kind()                :outputs                          end
-    def build_branch(name)    OutputBranchPort.new(self, name)  end
-    def add_subscriber(sub)   next_output.add_subscriber(sub)   end
-
-    # Default to first branch if none seem available.
-    # It's the branch's job to actually allow a binding to occur or not etc.
-    #
-    # This is perhaps too much logic. It might be better to assume ":main" branch if no branch specifier is given,
-    # instead of checking all the branches.
-    def next_output() (branches.find{|nm,br| br.unbound?}.try(:[],1) || branches[0]).next_output end
-  end
-
-  class Node
-    attr_reader :name
-
-    class << self
-      def [](*args) new(*args) end
-
-      # Hold stream inputs/outputs defined at the class level
-      def c_inputs () @c_inputs  ||= [] end
-      def c_outputs() @c_outputs ||= [] end
-
-      # Define class-level inputs/outputs
-      protected def input    (*names) c_inputs.concat (names.flatten) end
-      protected def output   (*names) c_outputs.concat(names.flatten) end
-    end
-
-    # For defining instance-level inputs/outputs
-    protected def input (*names) inputs.concat (names.flat_map{|n|  InputStreamPort.new(self,n)}) end
-    protected def output(*names) outputs.concat(names.flat_map{|n| OutputStreamPort.new(self,n)}) end
-
-    # Instance inputs/outputs (initialized with a copy of the class-defined ones)
-    def inputs () @inputs  ||= FlexArray.new(self.class.c_inputs .map{|n|  InputStreamPort.new(self, n)}) end
-    def outputs() @outputs ||= FlexArray.new(self.class.c_outputs.map{|n| OutputStreamPort.new(self, n)}) end
-
-    def initialize(name=nil)
-      @name = name || self.class.name
-    end
-
-    def next_input
-      error(AmbiguousBinding, inputs) if inputs.size > 1
-      inputs[0].next_input
-    end
-
-    def next_output
-      error(AmbiguousBinding, outputs) if outputs.size > 1
-      outputs[0].next_output
-    end
-
-    def listen_to     (other_port) next_input.listen_to      (other_port) end
-    def add_subscriber(other_port) next_output.add_subscriber(other_port) end
   end
 end
+
+
+
+  # class Node
+  #   attr_reader :name
+
+  #   class << self
+  #     def [](*args) new(*args) end
+
+  #     # Hold stream inputs/outputs defined at the class level
+  #     def c_inputs () @c_inputs  ||= [] end
+  #     def c_outputs() @c_outputs ||= [] end
+
+  #     # Define class-level inputs/outputs
+  #     protected def input    (*names) c_inputs.concat (names.flatten) end
+  #     protected def output   (*names) c_outputs.concat(names.flatten) end
+  #   end
+
+  #   # For defining instance-level inputs/outputs
+  #   protected def input (*names) inputs.concat (names.flat_map{|n|  InputStreamPort.new(self,n)}) end
+  #   protected def output(*names) outputs.concat(names.flat_map{|n| OutputStreamPort.new(self,n)}) end
+
+  #   # Instance inputs/outputs (initialized with a copy of the class-defined ones)
+  #   def inputs () @inputs  ||= FlexArray.new(self.class.c_inputs .map{|n|  InputStreamPort.new(self, n)}) end
+  #   def outputs() @outputs ||= FlexArray.new(self.class.c_outputs.map{|n| OutputStreamPort.new(self, n)}) end
+
+  #   def initialize(name=nil)
+  #     @name = name || self.class.name
+  #   end
+
+  #   def next_input
+  #     error(AmbiguousBinding, inputs) if inputs.size > 1
+  #     inputs[0].next_input
+  #   end
+
+  #   def next_output
+  #     error(AmbiguousBinding, outputs) if outputs.size > 1
+  #     outputs[0].next_output
+  #   end
+
+  #   def listen_to     (other_port) next_input.listen_to      (other_port) end
+  #   def add_subscriber(other_port) next_output.add_subscriber(other_port) end
+  # end
