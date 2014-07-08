@@ -1,5 +1,8 @@
+require 'active_support/all'
 require 'extensions'
 require 'flexhash'
+require 'proplist'
+require 'mathn'
 
 module Nodus
   SRCDIR  = File.dirname(__FILE__)
