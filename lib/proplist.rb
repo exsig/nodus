@@ -17,14 +17,15 @@ class PropSet
   def inverses() @inverses ||= self.class.inverses.dup end
   def defaults() @defaults ||= self.class.defaults.dup end
 
-  attr_reader :data
   def initialize(*opts)
     @data = {}
     merge_opts(*opts)
   end
 
+  def inspect() "#<PropSet #{@data.inspect}>" end
+
   def merge_opts(*opts)
-    opts = opts.reduce({}){|h,o| Hash === o ? h.merge(o) : h.merge({o.to_sym => true})}
+    opts = [opts].flatten.reduce({}){|h,o| Hash === o ? h.merge(o) : h.merge({o.to_sym => true})}
     opts.each do |k, v|
       k_str = k.to_s
       k_sym = k.to_sym
@@ -34,11 +35,11 @@ class PropSet
           @data.delete(k_to_remove)
           @data.delete(inverses[k_to_remove])
         else
-          error ArgumentError, "Parameter aspects that start with 'no_' are for unsetting that aspect of the parameter. For example, `no_default: true`- Always expecting 'true' as the value."
+          error ArgumentError, "Parameter aspects that start with 'no_' are for unsetting that aspect of the property. For example, `no_default: true`- Always expecting 'true' as the value."
         end
       else
         if inverses[k_sym]
-          error ArgumentError, "Expected true or false value for #{k_sym} aspect of parameter #{@name}" unless v == !!v
+          error ArgumentError, "Expected true or false value for #{k_sym} aspect of property #{@name}" unless v == !!v
           v = !v
           k_sym = inverses[k_sym]
         end
@@ -68,4 +69,31 @@ class PropSet
     end
     val
   end
+
+  def to_hash() @data end
+end
+
+class PropList < Delegator
+  def initialize(propclass=PropSet)
+    @propclass = propclass
+    @data      = {}
+    super(@data)
+  end
+
+  def __getobj__()  @data                    end
+  def __setobj__(o) @data = o                end
+  def dup() Marshal.load(Marshal.dump(self)) end
+
+  def <<(name_and_opts)
+    name, opts = name_and_opts
+    name = name.to_sym
+    if @data[name] then @data[name].merge_opts(opts)
+    else @data[name] = @propclass.new(opts, name: name) end
+    self
+  end
+
+  def merge(newer_proplist)
+    @data.merge(newer_proplist){|key, oldval, newval| oldval.merge_opts(newval.to_hash)}
+  end
+  alias_method :+, :merge
 end

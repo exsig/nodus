@@ -1,78 +1,75 @@
 module Nodus
   module Node
-    class Parameter
-      attr :name, :default
-      def initialize(name, opts={})
-        @name = name.to_sym
-        merge_opts(opts || {})
-      end
-
-      def merge_opts(opts={})
-        @default  =  opts.delete(:default)  if opts.has_key?(:default)
-        @required =  opts.delete(:required) if opts.has_key?(:required)
-        @required = !opts.delete(:optional) if opts.has_key?(:optional)
-        remove_instance_variable(:@default) if opts[:no_default]
-      end
-
-      def required?() @required || false                    end
-      def optional?() !required?                            end
-      def default?()  instance_variable_defined?(:@default) end
-      def inspect()   "#<param #{name}#{required? ? '*' : ''}#{default? ? "=#{default}" : ''}>" end
+    class Param < PropSet
+      default required: false, hidden: false
+      inverse visible:  :hidden
     end
 
-    class ParameterList < Delegator
-      def initialize()  @data = {}; super(@data) end
-      def __getobj__()  @data                    end
-      def __setobj__(o) @data = o                end
-      def dup() Marshal.load(Marshal.dump(self)) end
-      def inspect()     @data.values.inspect     end
-
-      def <<(param_init_args)
-        if Array === param_init_args
-          name, opts = param_init_args
-          name = name.to_sym
-          if   @data[name] then @data[name].merge_opts(opts || {})
-          else @data[name] = Parameter.new(name, opts) end
-        elsif Parameter === param_init_args
-          if   @data[param_init_args.name] then raise ArgumentError, "Haven't yet implemented parameter merging"
-          else @data[param_init_args.name] = param_init_args.dup end
-        else raise ArgumentError, "Can't use #{param_init_args.inspect} for a new parameter" end
-      end
-    end
-
-    class Base
+    class BaseNode
       class << self
-        def parameters()   @parameters ||= ParameterList.new end
-        def parameters=(p) @parameters   = p                 end
-        def param(*args)   parameters << args                end
+        def parameters()       @parameters ||= PropList.new(Param) end
+        def parameters=(p)     @parameters   = p                   end
+        def param(name, *args) parameters   << [name, args]        end
 
-        # CLASS LEVEL CURRYING
-        def new_parameterized_class(newname, param_defs={})
-          current_parameters = parameters
-          klass = Class.new(self) do |mod|
-            # Propagate parent parameters
-            mod.parameters = current_parameters.dup
+        def inherited(subclass)
+          subclass.parameters = parameters.dup
+        end
 
-            # Merge/append with new parameters
-            param_defs.each{|name, opts| mod.param(name, opts)}
+        # TODO:
+        # undefined_parameters()  #=> tell what required parameters don't have defaults set
+        # complete?() #=> all required parameters & connections defined (well enough)
+      end
+
+      def parameters() @parameters ||= self.class.parameters.dup end
+
+      # Initialize will usually allow any parameters (/parameter overrides), and any object-level connection information
+      # required.
+      #
+      def initialize(*params)
+        # fill params with non-hash heads of args and then use any remaining hash to fill in more params
+        # runtime error if some required parameters are not set
+      end
+
+
+    end
+
+
+    class Concurrent < BaseNode
+      class << self
+        # Defined by aggregate of all parameters, input ports, and output ports (of all kinds). Probably automatically
+        # need their own naming conventions...
+        #
+        # Elements are each node-classes
+        #
+        def compose(inner_nodes)
+          Class.new(self) do |composed|
+            inner_nodes.each do |node|
+              composed.parameters += node.parameters
+            end
           end
-          Object.const_set(newname, klass)
         end
       end
+    end
 
-      def initialize(*params)
-        pp parameters
-        # fill params with non-hash heads of args and then use any remaining hash to fill in more params
-      end
 
-      def parameters
-        @parameters ||= self.class.parameters.dup
-      end
+    class Pipe < BaseNode
 
     end
   end
 end
 
+
+
+
+        # CLASS LEVEL CURRYING
+        # def new_parameterized_class(newname, param_defs={})
+        #   current_parameters = parameters
+        #   klass = Class.new(self) do |mod|
+        #     # Merge/append with new parameters
+        #     param_defs.each{|name, opts| mod.param(name, opts)}
+        #   end
+        #   Object.const_set(newname, klass)
+        # end
 
 
   # class Node
