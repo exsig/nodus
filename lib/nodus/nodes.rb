@@ -1,3 +1,7 @@
+class Object
+  def kind_of_node?() false end
+end
+
 module Nodus
   module Nodes
     class Param < PropSet
@@ -18,6 +22,8 @@ module Nodus
 
     class Node
       class << self
+        def kind_of_node?()    true end
+
         def parameters()       @parameters ||= PropList.new(Param) end
         def parameters=(p)     @parameters   = p                   end
         def param(name, *args) parameters   << [name, args]        end
@@ -25,6 +31,7 @@ module Nodus
         def inherited(subclass)
           subclass.parameters = parameters.dup
         end
+
 
         # TODO:
         # undefined_parameters()  #=> tell what required parameters don't have defaults set
@@ -51,10 +58,10 @@ module Nodus
         #
         # Elements are each node-classes
         #
-        def compose(inner_nodes)
+        def compose(*inner_nodes)
           Class.new(self) do |composed|
             inner_nodes.each do |node|
-              composed.parameters += node.parameters
+              #composed.parameters += node.parameters
             end
           end
         end
