@@ -1,5 +1,5 @@
 module Nodus
-  module Node
+  module Nodes
     class Param < PropSet
       default required: false,  hidden:    false
       inverse visible: :hidden, required: :optional
@@ -12,7 +12,11 @@ module Nodus
       end
     end
 
-    class BaseNode
+    #class StreamPort < PropSet
+    #  inverse input: :output
+    #end
+
+    class Node
       class << self
         def parameters()       @parameters ||= PropList.new(Param) end
         def parameters=(p)     @parameters   = p                   end
@@ -27,21 +31,20 @@ module Nodus
         # complete?() #=> all required parameters & connections defined (well enough)
       end
 
-      def parameters() @parameters ||= self.class.parameters.dup end
 
+      # --------------------------------- Instance --------------------------------------------------------
+
+      def parameters() @parameters ||= self.class.parameters.dup end
       # Initialize will usually allow any parameters (/parameter overrides), and any object-level connection information
       # required.
-      #
       def initialize(*params)
         # fill params with non-hash heads of args and then use any remaining hash to fill in more params
         # runtime error if some required parameters are not set
       end
-
-
     end
 
 
-    class Concurrent < BaseNode
+    class ConcurrentNode < Node
       class << self
         # Defined by aggregate of all parameters, input ports, and output ports (of all kinds). Probably automatically
         # need their own naming conventions...
@@ -59,7 +62,7 @@ module Nodus
     end
 
 
-    class Pipe < BaseNode
+    class Pipe < Node
 
     end
   end
