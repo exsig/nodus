@@ -81,3 +81,15 @@ def remove_class(klass)
   Object.send(:remove_const, const) if Object.send(:const_defined?, const)
 end
 
+
+module MiniTest::Assertions
+  def assert_true(obj)   assert obj==true,  "expected '#{obj}' to be true"  end
+  def assert_false(obj)  assert obj==false, "expected '#{obj}' to be false" end
+  def assert_truthy(obj) assert obj,        "expected '#{obj}' to be something other than nil or false"  end
+  def assert_falsy(obj)  refute obj,        "expected '#{obj}' to be nil or false" end
+end
+Object.infect_an_assertion :assert_true,   :must_be_true,   :only_one_argument
+Object.infect_an_assertion :assert_false,  :must_be_false,  :only_one_argument
+Object.infect_an_assertion :assert_truthy, :must_be_truthy, :only_one_argument
+Object.infect_an_assertion :assert_falsy,  :must_be_falsy,  :only_one_argument
+
