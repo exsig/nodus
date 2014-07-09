@@ -36,4 +36,4 @@ class Class
 end
 
 
-require 'nodus/node'
+require 'nodus/nodes'
