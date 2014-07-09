@@ -31,4 +31,9 @@ def error(klass, *args)
   raise klass, sprintf(*([msg] + args))
 end
 
+class Class
+  def save_as(klass_name) Object.const_set(klass_name, self) end
+end
+
+
 require 'nodus/node'

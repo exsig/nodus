@@ -1,8 +1,15 @@
 module Nodus
   module Node
     class Param < PropSet
-      default required: false, hidden: false
-      inverse visible:  :hidden
+      default required: false,  hidden:    false
+      inverse visible: :hidden, required: :optional
+      def realize(val) self.default = val; self.hidden = true end
+      def realized?()  self.hidden? || self.optional? || self.has_default? end
+      def realized()
+        return self.default if self.has_default?
+        error RuntimeError, "Parameter #{self.name} is required but hasn't had any values set." if self.required?
+        nil
+      end
     end
 
     class BaseNode

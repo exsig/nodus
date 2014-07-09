@@ -28,6 +28,8 @@ describe PropSet do
     subject.has_required?.must_equal true
     subject.has_desc?.must_equal     true
     subject.has_default?.must_equal  false
+    subject.default = 1234
+    subject.default.must_equal       1234
   end
 
   it 'correctly emits values for reversed attributes' do
@@ -55,7 +57,7 @@ describe PropSet do
     subclass.optional.must_be_nil
   end
 
-  it 'does not confuse absent attributes with nil attributes' do
+  it 'does not confuse absent with nil-valued' do
     subclass.has_sometimes_nil?.must_equal false
     subclass.sometimes_nil.must_be_nil
     subclass.sometimes_nil = nil
@@ -76,5 +78,65 @@ describe PropSet do
     subclass.weirdy.must_equal      'yes'
     subclass.weirdy?.must_equal     true
   end
+
+  # TODO: check defaults on both keys of inverse pairs
+  # TODO: test `realize` and overridden versions
 end
 
+describe PropList do
+  class MyPropSet < PropSet
+    default blah:     20
+    default visible:  true
+    default required: false
+    inverse required: :optional
+    inverse visible:  :hidden
+    def realize(val)
+      self.value   = val
+      self.no_blah = true
+    end
+  end
+
+  subject { PropList.new(MyPropSet) }
+
+  it 'sees default correctly' do
+    b = MyPropSet.new({required: true, default: 900}, {name: :some_property})
+    b.required.must_equal true
+    b.default.must_equal 900
+  end
+
+  it 'can be populated an element at a time' do
+    subject.add 'some_property', required: true, default: 900
+    subject.add :another, :optional, :hidden
+    subject.some_property.optional?.must_equal false
+    subject[:some_property].default.must_equal 900
+    subject.another.optional?.must_equal       true
+  end
+
+  it 'can be populated using the << method' do
+    subject << [:first_property, :required, {default: 100}]
+    subject.first_property.optional?.must_equal    false
+    subject.first_property.default.must_equal      100
+    subject.first_property.has_default?.must_equal true
+    subject.first_property.blah.must_equal         20
+  end
+
+  it 'can be turned into a hash' do
+    subject.add 'some_property', required: true, default: 900
+    subject.add :another, :optional, :hidden
+    subject.to_hash.must_be_kind_of Hash
+    subject.to_hash.has_key?(:some_property).must_equal true
+  end
+
+  it 'allows properties to become realized' do
+    subject.add 'prop1', :required, :visible
+    subject.add 'prop2', blah: 199, default: 100
+
+    # TODO: add more
+  end
+
+  it 'can be merged with another' do
+    #a = PropList.new(MyPropSet)
+    #a.add(
+    skip
+  end
+end
