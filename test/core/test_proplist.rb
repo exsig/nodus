@@ -13,8 +13,8 @@ describe PropSet do
 
   it 'initialization properties become methods' do
     subject.required.must_be_false
-    subject.type.must_equal     Fixnum
-    subject.desc.must_equal     'does stuff'
+    subject.type.must_equal Fixnum
+    subject.desc.must_equal 'does stuff'
     subject.visible.must_be_true
   end
 
@@ -51,7 +51,7 @@ describe PropSet do
 
   it 'allows removal of attributes completely' do
     subclass.has_required?.must_be_true
-    subclass.no_required            = true
+    subclass.no_required = true
     subclass.has_required?.must_be_false
     subclass.required.must_be_nil
     subclass.optional.must_be_nil
@@ -67,15 +67,15 @@ describe PropSet do
 
   it 'honors default values (and with reverses)' do
     subclass.has_weirdy?.must_be_false
-    subclass.weirdy.must_equal      'yes'
+    subclass.weirdy.must_equal 'yes'
 
-    subclass.weirdy               = 'yes'
+    subclass.weirdy = 'yes'
     subclass.has_weirdy?.must_be_true
-    subclass.weirdy.must_equal      'yes'
+    subclass.weirdy.must_equal 'yes'
 
-    subclass.no_weirdy            = true
+    subclass.no_weirdy = true
     subclass.has_weirdy?.must_be_false
-    subclass.weirdy.must_equal      'yes'
+    subclass.weirdy.must_equal 'yes'
     subclass.weirdy?.must_be_true
   end
 
@@ -115,9 +115,9 @@ describe PropList do
   it 'can be populated using the << method' do
     subject << [:first_property, :required, {default: 100}]
     subject.first_property.optional?.must_be_false
-    subject.first_property.default.must_equal      100
+    subject.first_property.default.must_equal 100
     subject.first_property.has_default?.must_be_true
-    subject.first_property.blah.must_equal         20
+    subject.first_property.blah.must_equal 20
   end
 
   it 'can be turned into a hash' do
@@ -131,12 +131,10 @@ describe PropList do
     subject.add 'prop1', :required, :visible
     subject.add 'prop2', blah: 199, default: 100
 
-    # TODO: add more
-  end
-
-  it 'can be merged with another' do
-    #a = PropList.new(MyPropSet)
-    #a.add(
-    skip
+    subject.prop1.value.must_be_nil
+    subject.prop1.blah.must_equal 20
+    subject.realize(:prop1, 500)
+    subject.prop1.value.must_equal 500
+    subject.prop1.has_blah?.must_be_false
   end
 end
