@@ -22,7 +22,8 @@ module Nodus
 
     class Node
       class_attr_inheritable :parameters, PropList.new(Param)
-      class_attr_inheritable :title, nil
+      class_attr_inheritable :title,      nil
+      class_attr_inheritable :sub,        []  # Sub-nodes- mostly for later subclasses
 
       class << self
         def kind_of_node?()    true end
@@ -77,6 +78,34 @@ module Nodus
 
     class Pipe < Node
 
+    end
+
+    # Given: enumerator or something that can be to_enum'ed
+    # Given: lambda or proc or block - params are gathered by reflection
+    # Given: class - assumed to be enumerable (or perhaps have a wrappable loop function?) params gathered via
+    #        reflection on initialize.
+    # see http://stackoverflow.com/questions/4982630/trouble-yielding-inside-a-block-lambda when we get to lambdas etc.
+    #
+    class Generator < Node
+      class << self
+        def on_compose(title, kernel=nil, &block)
+          super(title)
+          @kernel = kernel || block
+          @kernel = case @kernel
+                    when Enumerator then @kernel.lazy # No parameters
+                    when Class
+                      init_params = @kernel.instance_method(:initialize).parameters
+                      init_params.each{|kind,pname| param(pname, (kind == :req ? :required : :optional))}
+                    when Node
+                      # TODO: Simply verify that the kernel has no input ports and create this thin wrapper around it...
+                      # Although it still might make sense to warn that this is a senseless act? (unless it becomes
+                      # necessary for some sorts of renaming etc.?)
+                      error NotImplementedError
+                    else
+                      error ArgumentError, "Generator Nodes don't support #{kernel.inspect} as a kernel"
+                    end
+        end
+      end
     end
   end
 end
