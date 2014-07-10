@@ -24,7 +24,7 @@ class PropSet
     merge_opts(*opts)
   end
 
-  def inspect() "#<PropSet #{@data.inspect}>" end
+  def inspect() "#<#{self.class.name} #{@data.inspect}>" end
   def to_hash() @data end
 
   def merge_opts(*opts)
@@ -83,17 +83,16 @@ class PropSet
     return self.default if self.has_default?
     nil
   end
+
+  def dup() Marshal.load(Marshal.dump(self)) end
 end
 
-class PropList < Delegator
+class PropList
   def initialize(propclass=PropSet)
     @propclass = propclass
     @data      = {}
-    super(@data)
   end
 
-  def __getobj__()  @data                    end
-  def __setobj__(o) @data = o                end
   def [](k)         @data[k.to_sym]          end
   def dup() Marshal.load(Marshal.dump(self)) end
 
@@ -103,7 +102,6 @@ class PropList < Delegator
   def add_name_opts(name_and_opts) name = name_and_opts.shift; add(name, name_and_opts) end
   alias_method :<<, :add_name_opts
 
-
   def add(name, *opts)
     name = name.to_sym
     if     @data[name] && opts.present? then @data[name].merge_opts(opts)
@@ -111,12 +109,9 @@ class PropList < Delegator
     @data[name]
   end
 
-  # Possibly not a good idea to have this. To much higher level context that's unknown here...
-  #
-  #def merge(newer_proplist)
-  #  @data.merge(newer_proplist){|key, oldval, newval| oldval.merge_opts(newval.to_hash)}
-  #end
-  #alias_method :+, :merge
+  def respond_to?(m, inc_all=false)
+    @data.has_key?(m.to_sym) || @data.respond_to?(m, inc_all)
+  end
 
   def method_missing(m, *a, &b)
     return @data[m.to_sym] if @data.has_key?(m.to_sym)
