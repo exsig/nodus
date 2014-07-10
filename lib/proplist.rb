@@ -111,10 +111,12 @@ class PropList < Delegator
     @data[name]
   end
 
-  def merge(newer_proplist)
-    @data.merge(newer_proplist){|key, oldval, newval| oldval.merge_opts(newval.to_hash)}
-  end
-  alias_method :+, :merge
+  # Possibly not a good idea to have this. To much higher level context that's unknown here...
+  #
+  #def merge(newer_proplist)
+  #  @data.merge(newer_proplist){|key, oldval, newval| oldval.merge_opts(newval.to_hash)}
+  #end
+  #alias_method :+, :merge
 
   def method_missing(m, *a, &b)
     return @data[m.to_sym] if @data.has_key?(m.to_sym)

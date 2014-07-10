@@ -32,6 +32,21 @@ module Nodus
           subclass.parameters = parameters.dup
         end
 
+        attr_accessor :name
+
+        def compose(*args, &block)
+          Class.new(self) do |new_klass|
+            on_compose(*args)
+            new_klass.instance_exec(new_klass, &block) if block_given?
+          end
+        end
+
+        # Override this at will with whatever parameters you want- just remember to call super, and with the right
+        # parameters
+        def on_compose(name)
+          error ArgumentError, "First argument to compose needs to be the symbolic name, not `#{name.inspect}`" unless name.kind_of? Symbol
+          self.name = name
+        end
 
         # TODO:
         # undefined_parameters()  #=> tell what required parameters don't have defaults set
@@ -55,14 +70,11 @@ module Nodus
       class << self
         # Defined by aggregate of all parameters, input ports, and output ports (of all kinds). Probably automatically
         # need their own naming conventions...
-        #
-        # Elements are each node-classes
-        #
-        def compose(*inner_nodes)
-          Class.new(self) do |composed|
-            inner_nodes.each do |node|
-              #composed.parameters += node.parameters
-            end
+
+        def on_compose(name, *inner_nodes)
+          super(name)
+          inner_nodes.each do |node|
+            STDERR.puts "Composed from: #{node.name}"
           end
         end
       end
