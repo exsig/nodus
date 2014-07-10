@@ -55,7 +55,7 @@ describe Nodus::Nodes::Node do
     MySuperNode.parameters.p2.hidden?.must_be_true
     remove_class(:MySuperNode)
 
-    class MyOtherNode < subject.compose :my_other_node
+    class MyOtherNode < subject[:my_other_node]
       param :pzz
     end
     MyOtherNode.must_be_a_node
@@ -85,6 +85,11 @@ describe Nodus::Nodes::ConcurrentNode do
 
   it 'is a kind of node' do
     conc = ConcurrentNode.compose(:conc, base_1, base_2)
+    conc.must_be_a_node
+    conc.new.must_be_kind_of Node
+    conc.title.must_equal :conc
+
+    conc = ConcurrentNode[:conc, base_1, base_2]
     conc.must_be_a_node
     conc.new.must_be_kind_of Node
     conc.title.must_equal :conc
