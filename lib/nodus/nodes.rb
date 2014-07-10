@@ -87,6 +87,26 @@ module Nodus
   end
 end
 
+# given:
+#    parent_1   :   p1, p2, p3
+#    parent_2   :       p2, p3, p4
+#    parent_3   :                  p5
+#
+#
+#    parent_1__p1 -> valid
+#    parent_1__p2 -> valid
+#    ...
+#
+#    p1, p4, p5         -> valid (maps to parent_1__p1 etc.)
+#    p2, p3             -> exception asks parent_1__... or parent_2__...?
+#    parent_1, parent_2 -> exception asks which property (p1, p2, or p3), or (p2, p3, p4)
+#    parent_3           -> valid (maps to parent_3__p5)
+#
+#    doesn't solve the problem of nodes having the same name running in a concurrent composition (for example)!
+#
+#    ability to rename params & ports as they get composed... (or as something else done while currying etc...)
+#
+
 
 
 
