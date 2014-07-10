@@ -21,31 +21,26 @@ module Nodus
     #end
 
     class Node
+      class_attr_inheritable :parameters, PropList.new(Param)
+      class_attr_inheritable :title, nil
+
       class << self
         def kind_of_node?()    true end
-
-        def parameters()       @parameters ||= PropList.new(Param) end
-        def parameters=(p)     @parameters   = p                   end
-        def param(name, *args) parameters   << [name, args]        end
-
-        def inherited(subclass)
-          subclass.parameters = parameters.dup
-        end
-
-        attr_accessor :name
+        def param(param_name, *args) parameters << [param_name, args]  end
 
         def compose(*args, &block)
           Class.new(self) do |new_klass|
-            on_compose(*args)
+            new_klass.on_compose(*args)
             new_klass.instance_exec(new_klass, &block) if block_given?
           end
         end
+        alias_method :[], :compose
 
         # Override this at will with whatever parameters you want- just remember to call super, and with the right
         # parameters
-        def on_compose(name)
-          error ArgumentError, "First argument to compose needs to be the symbolic name, not `#{name.inspect}`" unless name.kind_of? Symbol
-          self.name = name
+        def on_compose(title)
+          error ArgumentError, "First argument to compose needs to be the symbolic title, not `#{title.inspect}`" unless title.kind_of? Symbol
+          self.title = title
         end
 
         # TODO:
@@ -56,7 +51,6 @@ module Nodus
 
       # --------------------------------- Instance --------------------------------------------------------
 
-      def parameters() @parameters ||= self.class.parameters.dup end
       # Initialize will usually allow any parameters (/parameter overrides), and any object-level connection information
       # required.
       def initialize(*params)
@@ -71,10 +65,10 @@ module Nodus
         # Defined by aggregate of all parameters, input ports, and output ports (of all kinds). Probably automatically
         # need their own naming conventions...
 
-        def on_compose(name, *inner_nodes)
-          super(name)
+        def on_compose(title, *inner_nodes)
+          super(title)
           inner_nodes.each do |node|
-            STDERR.puts "Composed from: #{node.name}"
+            STDERR.puts "Composed from: #{node.title}"
           end
         end
       end

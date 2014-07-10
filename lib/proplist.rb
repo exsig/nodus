@@ -1,23 +1,13 @@
 
 # Properties of properties (such as required, default, type, etc.)
 class PropSet
-  # TODO: this pattern with inverses & defaults is being repeated a lot. Abstract it.
+  class_attr_inheritable :inverses, {}
+  class_attr_inheritable :defaults, {} # Don't confuse this with the property's default- it's the property's property's default (e.g., `required` defaults to false, or `default` defaults to nil)
+
   class << self
-    def inherited(subclass)
-      subclass.inverses = inverses.dup
-      subclass.defaults = defaults.dup
-    end
-
-    def inverses() @inverses ||= {} end
-    def defaults() @defaults ||= {} end  # Don't confuse this with the property's default- it's the property's property's default (e.g., `required` defaults to false, or `default` defaults to nil)
-    attr_writer :inverses, :defaults
-
     protected def inverse(kvpairs) inverses.merge!(kvpairs) end # TODO: verify that keys aren't values and that there are no duplicate values
     protected def default(kvpairs) defaults.merge!(kvpairs) end
   end
-
-  def inverses() @inverses ||= self.class.inverses.dup end
-  def defaults() @defaults ||= self.class.defaults.dup end
 
   def initialize(*opts)
     @data = {}
