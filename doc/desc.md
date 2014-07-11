@@ -25,9 +25,10 @@ If a class handler, it will probably want to implement one or more of:
 
 `parameter: (optional[<default>] | required)`
 
-`| input: (operational<output-port[s]> | consumed [control]) x (optional | required)`
+`| input:  (operational<output-port[s]> | consumed  [control]) x (optional | required)`
 
-`| output: (operational<input-port[s]> | generated [control]) x (primary | tap)`
+`| output: ( operational<input-port[s]> | generated [control]) x (tap      |  primary)`
+
 
 
 ##### Parameters

@@ -16,9 +16,18 @@ module Nodus
       end
     end
 
-    #class StreamPort < PropSet
-    #  inverse input: :output
-    #end
+    class StreamPort < PropSet
+      # `| input:  (operational<output-port[s]> | consumed  [control]) x (optional | required)`
+      # `| output: ( operational<input-port[s]> | generated [control]) x (tap      |  primary)`
+
+      inverse input:    :output
+      inverse optional: :required
+      inverse tap:      :primary
+      inverse control:  :stream
+
+      default optional: true
+      default primary:  true
+    end
 
     # I think we'll want the following to be completely disjoint:
     # (common methods) ⊔ (node methods) ⊔ (parameter names) ⊔ (node names) ⊔ (stream-port names)
@@ -27,11 +36,15 @@ module Nodus
     class Node
       class_attr_inheritable :parameters, PropList.new(Param)
       class_attr_inheritable :title,      nil
-      class_attr_inheritable :sub,        []  # Sub-nodes- mostly for later subclasses
+      class_attr_inheritable :sub,        FlexArray.new  # Sub-nodes- mostly for later subclasses
 
       class << self
         def kind_of_node?()    true end
-        def param(param_name, *args) parameters << [param_name, args]  end
+        def param(param_name, *args)
+          arg_hash = (Hash === args.last ? args.pop : {})
+          arg_hash.merge!({name: param_name, node: self.title, node_type: self, node_name: self.name})
+          parameters << [param_name, args << arg_hash]
+        end
 
         def compose(*args, &block)
           Class.new(self) do |new_klass|
@@ -70,10 +83,10 @@ module Nodus
         # Defined by aggregate of all parameters, input ports, and output ports (of all kinds). Probably automatically
         # need their own naming conventions...
 
-        def on_compose(title, *inner_nodes)
+        def on_compose(title, *sub_nodes)
           super(title)
-          inner_nodes.each do |node|
-            STDERR.puts "Composed from: #{node.title}"
+          sub_nodes.each do |node|
+            sub << node
           end
         end
       end

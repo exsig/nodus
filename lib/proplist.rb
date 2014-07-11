@@ -83,7 +83,18 @@ class PropList
     @data      = {}
   end
 
-  def [](k)         @data[k.to_sym]          end
+  def [](kvs)
+    kvs = {name: kvs} unless Hash === kvs
+
+    res = @data.values
+    kvs.each{|k,v| res = res.select{|prop| prop.send(k) == v}}
+
+    case res.size
+    when 0 then nil
+    when 1 then res[0]
+    else res end
+  end
+
   def dup() Marshal.load(Marshal.dump(self)) end
 
   def realize(name, value) add(name).tap{|pset| pset.realize(value)} end

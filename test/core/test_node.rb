@@ -56,7 +56,6 @@ describe Nodus::Nodes::Node do
     class MyThirdNode < Node[:the_third]; end
     MyThirdNode.must_be_a_node
     MyThirdNode.parameters.must_be_empty
-    #pp MyThirdNode
     MyThirdNode.title.must_equal :the_third
 
     remove_class(:MyThirdNode)
