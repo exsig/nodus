@@ -100,12 +100,16 @@ class PropList
   end
 
   def respond_to?(m, inc_all=false)
-    @data.has_key?(m.to_sym) || @data.respond_to?(m, inc_all)
+    @data.has_key?(m.to_sym) || @data.respond_to?(m, inc_all) || !!m[/has_.+\?/]
   end
 
   def method_missing(m, *a, &b)
-    return @data[m.to_sym] if @data.has_key?(m.to_sym)
-    return @data.send(m, *a, &b) if @data.respond_to?(m)
+    return @data[m.to_sym]                 if @data.has_key?(m.to_sym)
+    return @data.send(m, *a, &b)           if @data.respond_to?(m)
+    return @data.has_key?(m[4..-2].to_sym) if m[/has_.+\?/]
     super
   end
+
+  def include?(k) super(k.to_sym) end
+  alias_method :includes?, :include?
 end

@@ -112,6 +112,19 @@ describe PropList do
     subject.another.optional?.must_be_true
   end
 
+  it 'can query for elements using a shorthand method' do
+    subject.add 'some_property', required: true, default: 900
+    subject.add :another, :optional, :hidden
+    subject.must_respond_to :has_another?
+    subject.has_blahblah?.must_be_false
+    subject.has_some_property?.must_be_true
+    subject.has_another?.must_be_true
+
+    subject.include?('another').must_be_true
+    subject.includes?(:some_property).must_be_true
+    subject.includes?(:blahblahblah).must_be_false
+  end
+
   it 'can be populated using the << method' do
     subject << [:first_property, :required, {default: 100}]
     subject.first_property.optional?.must_be_false
