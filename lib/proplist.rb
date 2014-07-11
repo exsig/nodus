@@ -1,5 +1,10 @@
 
+# TODO: REFACTOR, CLEANUP, and SIMPLIFY!
+
 # Properties of properties (such as required, default, type, etc.)
+#
+# TODO: change this into a mixin module? Make it more like a simple add-on to openstruct? (and put in its own file)
+
 class PropSet
   class_attr_inheritable :inverses, {}
   class_attr_inheritable :defaults, {} # Don't confuse this with the property's default- it's the property's property's default (e.g., `required` defaults to false, or `default` defaults to nil)
@@ -83,6 +88,9 @@ class PropList
     @data      = {}
   end
 
+  # TODO: have the node say "parameter[]" when it wants a singular results with possibly a warning or even exception
+  # when more than one matches, vs "parameters[]" which always gives an array, even if only one or zero matches...
+
   def [](kvs)
     kvs = {name: kvs} unless Hash === kvs
 
@@ -99,6 +107,9 @@ class PropList
 
   def realize(name, value) add(name).tap{|pset| pset.realize(value)} end
   alias_method :[]=, :realize
+
+  # TODO: add-override separate from add-unique - the first used in inheritance, for example when currying parameters,
+  # and the latter used when composing many together that might normally have name conflicts.
 
   def add_name_opts(name_and_opts) name = name_and_opts.shift; add(name, name_and_opts) end
   alias_method :<<, :add_name_opts
@@ -120,6 +131,11 @@ class PropList
     return @data.has_key?(m[4..-2].to_sym) if m[/has_.+\?/]
     super
   end
+
+  # TODO: method_missing revolves around `by_xxxx` - gives a hash indexed by the stated propset-value
+  #       if no `by_` then it is assumed to be the index into ANY of the propset-values that has a symbol or string as
+  #       the value. If the by_xxxx were chainable, it could be a method_missing equivalent of the [] search method...
+  #       (probably not important)
 
   def include?(k) super(k.to_sym) end
   alias_method :includes?, :include?
