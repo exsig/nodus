@@ -93,3 +93,15 @@ Object.infect_an_assertion :assert_false,  :must_be_false,  :only_one_argument
 Object.infect_an_assertion :assert_truthy, :must_be_truthy, :only_one_argument
 Object.infect_an_assertion :assert_falsy,  :must_be_falsy,  :only_one_argument
 
+
+
+#----------------------------------- NODUS SPECIFIC ---------------------------------------------------------
+
+module MiniTest::Assertions
+  def assert_kind_of_node(obj)
+    assert obj.kind_of_node?, "expected #{obj} to be a class descended from Node"
+  end
+end
+Object.infect_an_assertion :assert_kind_of_node,
+                           :must_be_a_node,
+                           :only_one_argument

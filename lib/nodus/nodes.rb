@@ -92,22 +92,24 @@ module Nodus
     #
     class Generator < Node
       class << self
+        attr_reader :kernel
+
         def on_compose(title, kernel=nil, &block)
           super(title)
           @kernel = kernel || block
-          @kernel = case @kernel
-                    when Enumerator then @kernel.lazy # No parameters
-                    when Class
-                      init_params = @kernel.instance_method(:initialize).parameters
-                      init_params.each{|kind,pname| param(pname, (kind == :req ? :required : :optional))}
-                    when Node
-                      # TODO: Simply verify that the kernel has no input ports and create this thin wrapper around it...
-                      # Although it still might make sense to warn that this is a senseless act? (unless it becomes
-                      # necessary for some sorts of renaming etc.?)
-                      error NotImplementedError
-                    else
-                      error ArgumentError, "Generator Nodes don't support #{kernel.inspect} as a kernel"
-                    end
+          case @kernel
+          when Enumerator then @kernel = @kernel.lazy # No parameters
+          when Class
+            init_params = @kernel.instance_method(:initialize).parameters
+            init_params.each{|kind,pname| param(pname, (kind == :req ? :required : :optional))}
+          when Node
+            # TODO: Simply verify that the kernel has no input ports and create this thin wrapper around it...
+            # Although it still might make sense to warn that this is a senseless act? (unless it becomes
+            # necessary for some sorts of renaming etc.?)
+            error NotImplementedError
+          else
+            error ArgumentError, "Generator Nodes don't support #{kernel.inspect} as a kernel"
+          end
         end
       end
     end

@@ -1,15 +1,6 @@
 require_relative '../helper.rb'
 include Nodus::Nodes
 
-module MiniTest::Assertions
-  def assert_kind_of_node(obj)
-    assert obj.kind_of_node?, "expected #{obj} to be a class descended from Node"
-  end
-end
-Object.infect_an_assertion :assert_kind_of_node,
-                           :must_be_a_node,
-                           :only_one_argument
-
 describe Nodus::Nodes::Node do
   subject do
     Node.compose(:subject) do
