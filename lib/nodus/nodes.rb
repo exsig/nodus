@@ -33,10 +33,18 @@ module Nodus
     # (common methods) ⊔ (node methods) ⊔ (parameter names) ⊔ (node names) ⊔ (stream-port names)
     # This way we can do method_missing safely to specify params, nodes, ports, or anything else depending on the context.
     #
+    # TODO: make nodes aware of their container? in order, perhaps, for them to ask the container who they should be
+    # connected to instead of the other way around?
+    #
     class Node
-      class_attr_inheritable :parameters, PropList.new(Param)
-      class_attr_inheritable :title,      nil
-      class_attr_inheritable :sub,        FlexArray.new  # Sub-nodes- mostly for later subclasses
+      class_attr_inheritable :title,           nil
+      class_attr_inheritable :parameters,      PropList.new(Param)
+      class_attr_inheritable :symmetric_ports, PropList.new(StreamPort)
+      class_attr_inheritable :consumed_ports,  PropList.new(StreamPort)
+      class_attr_inheritable :generated_ports, PropList.new(StreamPort)
+
+      class_attr_inheritable :sub,             FlexArray.new  # Sub-nodes- mostly for later subclasses
+      class_attr_inheritable :channels,        FlexArray.new  # Binding pairs of inner nodes
 
       class << self
         def kind_of_node?()    true end
@@ -85,10 +93,12 @@ module Nodus
 
         def on_compose(title, *sub_nodes)
           super(title)
-          sub_nodes.each do |node|
-            sub << node
-          end
+          sub_nodes.each{|node| sub << node}
         end
+
+        #def parameters
+        #  sub.map{|s| s.parameters}
+        #end
       end
     end
 
