@@ -23,7 +23,7 @@ gem 'activesupport', '>= 4.1.0'
 # (Includes everything needed to run rake, tests, features, etc.)
 group :development do
   gem 'bundler'
-  gem 'git',     git: 'git@github.com:thomasbiddle/ruby-git.git', branch: 'support_submodules' #git: 'git@github.com:schacon/ruby-git.git'
+  gem 'git',     git: 'git@github.com:josephwecker/ruby-git.git'
   gem 'jeweler', git: 'git@github.com:technicalpickles/jeweler.git'
   gem 'brice'
   gem 'ansi'
