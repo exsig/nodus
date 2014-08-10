@@ -3,6 +3,8 @@ Nodus
 
 _(WARNING: EXPERIMENTAL)_
 
+Also, note that most of this README is out-of-date and inconsistent at the moment...
+
 Description
 ------------------------------------------------------------------------------------------------------------------------------
 
