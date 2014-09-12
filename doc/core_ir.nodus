@@ -1,0 +1,63 @@
+# curr-diff()   -> λ[<num>,<num> | <num>] {}                { @o << @i1 - @i2     }
+# sum(offset=0) -> λ[<num>       | <num>] { @acc = ^offset }{ @o << (@acc += @i1) }
+# 
+# rand:geo(p)   ->
+#   pipe[ rand:uniform(),
+#         λ[<f32> | ~1::<u64>]{ @tot = 0 }{
+#           if @i1 >= ^p { @o1 << @tot; @tot = 0 } else { @tot += 1 }
+#         }]
+# 
+# rand:discrete-laplace(p,q=p) ->
+#   pipe[ join[ rand-geo(p), rand-geo(q) ], curr-diff() ]
+# 
+# rand-walk:discrete-laplace(p,q=p,off=0) ->
+#   pipe[ rand-discrete-laplace(p,q), sum(off) ]
+# 
+# 
+# fx:raw:pseudo(offset=10000, sample-spread=12) ->
+#   pipe[ join[ rand-walk:discrete-laplace(p=0.3,off=offset), rand:uniform() ], # TODO : pseudo-timing generator
+#         λ[primary<uint>, spread-diff<f32> | bid<uint>, ask<uint>] {} { 
+#           @ask   << (ask = @primary)
+#           spread = (^sample-spread / 10.0 * @spread-diff).round # NOTE : sample-spread from raw:pseudo's parameters
+#           @bid   << ask - spread
+#         }]
+# 
+# 
+
+
+
+
+# fx:raw:pseudo(offset=10000, sample-spread=12) ->
+#   pipe[ join[ rand-walk:discrete-laplace(p=0.3,off=offset), rand:uniform() ], # TODO : pseudo-timing generator
+#         λ[primary<uint>, spread-diff<f32> | bid<uint>, ask<uint>] {} { 
+#           @ask   << (ask = @primary)
+#           spread = (^sample-spread / 10.0 * @spread-diff).round # NOTE : sample-spread from raw:pseudo's parameters
+#           @bid   << ask - spread
+#         }]
+
+
+
+rand:uniform(seed=1)           -> node /               | out: f64    / { @prng=Prng.new(seed=^seed)}{$out << @prng.next}
+lambda_1(p)                    -> node /in: f32        | ~s1:out: u64/ { @tot = 0 }{ if $i1 >= ^p { $o << @tot; @tot = 0 } else { @tot += 1 }}
+rand:geo(p)                    -> pipe /               | out: u64    / [ rand:uniform(), lambda_1(p) ]
+curr-diff()                    -> node /x: num, y: num | out: num    / { }{ $out << $x - $y }
+
+rand:dlaplace(p,q=p)           -> comp /               | out: num    / [rand:geo(p) as geo1, rand:geo(q) as geo2, curr-diff()]
+                                                                       [geo1.out|curr-diff.x, geo2.out|curr-diff.y]
+sum(offset=0)                  -> node /in: num        | out: num    / { @acc = ^offset }{ $out << (@acc += $in) }
+rand:walk:dlaplace(p,q=p,off=0)-> pipe /               | out: num    / [rand:dlaplace(p,q), sum(off)]
+
+lambda_2(samp_spr=12)          -> node /primary: uint, spr: f32 | (bid: uint, ask: uint) /{}{ $ask << (ask = $primary); spread = (^samp_spr / 10.0 * $spread-diff).round; $bid << ask - spread }
+fx:raw:pseudo(off=10000,spr=12)-> pipe /               | (bid: uint, ask: uint) / [rand:walk:dlaplace(p=0.3,off=offset) as walk, rand:uniform() as spread-factor, lambda_2 as main]
+                                                                                  [walk.out|main.primary, rnd.out|main.spr]
+
+
+newnode -> composite( children_nodes...
+
+???????????????????????
+
+# children nodes, with aliases, parameters, input ports, output ports, and tap-points
+
+
+
+
