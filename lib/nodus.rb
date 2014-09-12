@@ -41,3 +41,6 @@ class Class
     Object.const_set(klass_name, self)
   end
 end
+
+
+require 'nodus/core_parser'

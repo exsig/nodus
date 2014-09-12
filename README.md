@@ -16,6 +16,8 @@ It is influenced by, inspired by, and in many cases similar to:
    [here](http://www.reactivemanifesto.org/))
  * [Kahn Process Networks](http://en.wikipedia.org/wiki/Kahn_process_networks)
  * [Algorithmic Skeletons](http://en.wikipedia.org/wiki/Algorithmic_skeleton) (see also [here](https://github.com/ParaPhrase/skel))
+ * [FastFlow (FF)](http://calvados.di.unipi.it/)
+ * [nanomsg](http://nanomsg.org) et al
  * [Iteratee IO](http://okmij.org/ftp/Streams.html)
  * [Railway Oriented Programming](http://www.slideshare.net/ScottWlaschin/railway-oriented-programming)
  * [Erlang](http://www.erlang.org/)
@@ -28,23 +30,12 @@ It is influenced by, inspired by, and in many cases similar to:
 
 
 -  Guiding philosophies
-  - [ ] Steady-state
+  - [ ] Steady-state long-running online (algorithmically)
   - [ ] Composable
   - [ ] Proportionate
-  - [ ] Real-time & simulation-time
+  - [ ] Real-time vs simulation-time
   - [ ] Resilient (failure modes as first class features, exception/failure paths, bulkheads, circuitbreakers, hibernation, ...)
-- Simple single-stream sequential
-  - [ ] URI-like notation
-  - [ ] Token state accumulation
-- Single-stream sequential with explicit sink
-- Single-stream parallel
-  - [ ] Branches
-  - [ ] Forks
-  - [ ] Waypoints
-  - [ ] Pattern Branching
-- Multi-stream
-- Getting away with duck-typing
-
+  - [ ] Agile (rapid iteration and experimentation with, simultaneously, stable production systems)
 
 
 #### Guiding Assumptions
@@ -76,6 +67,29 @@ It is additionally tuned for (but doesn't assume) problems with the following pr
 
 
 Use [Little's law](http://en.wikipedia.org/wiki/Little%27s_law) for queue bounds
+
+
+
+
+Implementation Notes
+-------------------------------------------------------------------------------------------------
+
+[nodus files]           \
+[node implementations]  +----> (nodus-precompile) 
+[external applications] /          \------> [nodus-graph-core-ir]
+                                                \------> (selected target lang generator)
+                                                              \---> [executable nodus units)]
+
+
+
+The nodus language at a high level will have a lot of composition operations etc. The graph intermediate representation
+will have only the expanded core nodes with port mappings (and _maybe_ some kind of runtime generative / template-like
+versions).
+
+
+
+
+
 
 Contributing
 -------------------------------------------------------------------------------------------------
