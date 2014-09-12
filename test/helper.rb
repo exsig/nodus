@@ -8,8 +8,6 @@ rescue Bundler::BundlerError => e
   exit e.status_code
 end
 require 'simplecov'
-require 'ffaker'
-require 'randexp'
 require 'minitest'
 require 'minitest/reporters'
 require 'minitest/spec'
@@ -35,42 +33,6 @@ ENV["COVERAGE"] && SimpleCov.start do
   add_filter "/.rvm/"
 end
 I18n.enforce_available_locales = false
-
-include Faker
-
-
-module RandomGen
-  def rand_poisson(lmbda=10)
-    # Poisson distribution with mean & variance of lmda- via knuth's simple algorithm
-    el = Math.exp(- lmbda); k=0; p=1
-    loop do
-      k += 1; p *= rand
-      return k - 1 if p <= el
-    end
-  end
-
-  def rand_times(lmbda=10, &block)
-    k = rand_poisson(lmbda)
-    if block_given? then k.times.map(&block)
-    else k.times end
-  end
-
-  def rand_word
-    len = rand_poisson
-    return '' if len == 0
-    /\w{#{len}}/.gen
-  end
-
-  def random_path
-    '/' + rand_times{rand_word}.join('/')
-  end
-
-  def random_datetime
-    ::Faker::Time.date(series: [])[0]
-  end
-end
-
-include RandomGen
 
 class Module
   include Minitest::Spec::DSL
