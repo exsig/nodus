@@ -1,7 +1,6 @@
 source "http://rubygems.org"
 # Dependencies required by gem
 gem 'activesupport', '>= 4.1.0'
-gem 'parslet'
 
 # Dependencies for gem development
 # (Includes everything needed to run rake, tests, features, etc.)
