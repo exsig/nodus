@@ -41,3 +41,8 @@ class Class
     Object.const_set(klass_name, self)
   end
 end
+
+#require 'nodus/recursive_state_machine'
+require 'nodus/atoms'
+require 'nodus/dsl'
+
